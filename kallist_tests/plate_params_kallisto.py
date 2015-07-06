@@ -1,4 +1,4 @@
-#######################################
+ #######################################
 ## plate_params.py allows you to change
 ## the parameters for the plate experim
 ## ent pipeline.
@@ -16,16 +16,17 @@
 ##									 ##
 #######################################
 
-####Path to .fastq files
-#dir_path_fastqs = '../data/fastqs_lucas/fastqs/'
-dir_path_fastqs = '../data/test/fastqs/'
-####Path to .sam files
-#dir_path_alignment = '../data/fastqs_lucas/alignment/'
-dir_path_alignment = '../data/test/alignment/'
+####Path to fastq files in the given directory:
+#dir_path_fastqs = '../fastqs_sisi/fastqs'
+#dir_path_alignment = '../fastqs_sisi/alignment/'
+dir_path_fastqs = '../fastqs_kallisto/fastqs/'
+dir_path_alignment = '../fastqs_kallisto/alignment/'
 
-####Path to the reference genome files
-#reference_genome = '../reference_genomes/mm9/Transcriptome/transcriptome'
-reference_genome = '../reference_genomes/Rattus_norvegicus/UCSC/rn5/cds'
+####Path to the fasta file [Kallisto]
+reference_genome = '../reference_genomes/mm9/Transcriptome/transcripts.fa'
+
+####Path to the .idx file (will be created if does not exist)
+reference_idx = '../reference_genomes/mm9/Transcriptome/transcripts.idx'
 
 #######################################
 ## 									 ##
@@ -39,13 +40,13 @@ reference_genome = '../reference_genomes/Rattus_norvegicus/UCSC/rn5/cds'
 #######################
 
 ####umi length:
-umi_length = 0
+umi_length = 5
 
 ####TAC length:
-tac_length = 0
+tac_length = 3
 
 ####Number of G's to delete
-g_length = 0
+g_length = 4
 
 ####Tso sequence
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
@@ -60,12 +61,8 @@ minimum_length = 30
 
 
 #######################
-##    Bowtie2 var    ##
+##   Kallisto vars   ##
 #######################
-bowtie2_dir=''
-#Server processors
-processors = 8
-#Less sensitive 
-bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '--local', '-p', str(processors), '--no-hd', '--met', '20']
-#very sensitive
-#bowtie2_options = { '-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50','-p', num2str(params.processors)};
+
+####
+

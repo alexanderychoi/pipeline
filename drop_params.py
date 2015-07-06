@@ -23,8 +23,8 @@ dir_path_fastqs = '../data/drop_test/fastqs/'
 dir_path_alignment = '../data/drop_test/alignment/'
 
 ####Path to the reference genome files
-reference_genome = '../reference_genomes/mm9/Transcriptome/transcriptome'
-#reference_genome = '../reference_genomes/Human_Mouse/genome'
+#reference_genome = '../reference_genomes/mm9/Transcriptome/transcriptome'
+reference_genome = '../reference_genomes/Human_Mouse/transcriptome'
 
 #######################################
 ## 									 ##

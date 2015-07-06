@@ -52,19 +52,19 @@ curr_fastq = 2
 for f1, f2 in grouped(fastq_files, 2):
 	percent = int((curr_fastq/nb_fastqs)*100)
 	curr_fastq+=2
-	if os.path.isfile(dir_path_fastqs+os.path.splitext(f1)[0]+'_noTA.fastq.gz'):
+	if os.path.isfile(dir_path_fastqs+f1.split(os.extsep)[0]+'_noTA.fastq.gz'):
 		print f1
 		print f2
 		print "\tFiles already preprocessed. Moving on to other files...",percent,"%"
 	else:
 		print "Begin..."
 		print "Opening fastq files..."
-		fastq1_path = dir_path_fastqs+os.path.splitext(f1)[0]
-		fastq2_path = dir_path_fastqs+os.path.splitext(f2)[0]
+		fastq1_path = dir_path_fastqs+f1.split(os.extsep)[0]
+		fastq2_path = dir_path_fastqs+f2.split(os.extsep)[0]
 		#file1_fastq = open(fastq1_path+'.fastq','r')
 		#file2_fastq = open(fastq2_path+'.fastq','r')
-		file1_fastq = gzip.open(fastq1_path+'.gz','rb')
-		file2_fastq = gzip.open(fastq2_path+'.gz','rb')
+		file1_fastq = gzip.open(fastq1_path+'.fastq.gz','rb')
+		file2_fastq = gzip.open(fastq2_path+'.fastq.gz','rb')
 		#Dictionary containing (seq)-(umis list) pairs
 		seq_dictionary = defaultdict(list)
 		print f1
@@ -93,12 +93,21 @@ for f1, f2 in grouped(fastq_files, 2):
 				break
 			else:
 				total_reads+=1
-			if tso not in f2_line2:
-				barcode = f1_line2[:barcode_length]
-				umi = f1_line2[barcode_length:barcode_length+umi_length]
-				#Checking trimmed sequence length
-				if f2_line2 in seq_dictionary:
-					if umi not in seq_dictionary[f2_line2]:
+			if f1_line2[:6] != 'TACGGG'
+				if tso not in f2_line2:
+					barcode = f1_line2[:barcode_length]
+					umi = f1_line2[barcode_length:barcode_length+umi_length]
+					#Checking trimmed sequence length
+					if f2_line2 in seq_dictionary:
+						if umi not in seq_dictionary[f2_line2]:
+							seq_dictionary[f2_line2].append(umi)
+							file_barcode.write(barcode+'\n')
+							file_umi.write(umi+'\n')
+							file_noTA.write(f1_line1)
+							file_noTA.write(f2_line2)
+							file_noTA.write(f1_line3)
+							file_noTA.write(f2_line4)
+					else:
 						seq_dictionary[f2_line2].append(umi)
 						file_barcode.write(barcode+'\n')
 						file_umi.write(umi+'\n')
@@ -106,14 +115,6 @@ for f1, f2 in grouped(fastq_files, 2):
 						file_noTA.write(f2_line2)
 						file_noTA.write(f1_line3)
 						file_noTA.write(f2_line4)
-				else:
-					seq_dictionary[f2_line2].append(umi)
-					file_barcode.write(barcode+'\n')
-					file_umi.write(umi+'\n')
-					file_noTA.write(f1_line1)
-					file_noTA.write(f2_line2)
-					file_noTA.write(f1_line3)
-					file_noTA.write(f2_line4)
 		file_umi.close()
 		file_barcode.close()
 		file1_fastq.close()
@@ -204,6 +205,7 @@ else:
 					dict_barcode_genes[barcode] = {gene : 1}
 					barcode_counter+=1
 	barcode_file.close()
+	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
 	print "Creating genes-cells matrix...\n"
 
