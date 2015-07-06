@@ -154,9 +154,9 @@ else:
 	sam_files.sort()
 	nb_sam = len(sam_files)
 	curr_sam = 1
-	gene_counter = 0
+	gene_counter = 1
 	experiment_counter = 1
-	dict_exp_genes = defaultdict(dict)
+	dict_genes_exp = defaultdict(dict)
 	dict_gene_counter = defaultdict(int)
 	dict_exp_counter = defaultdict(str)
 	print "Checking SAM files..."
@@ -176,13 +176,14 @@ else:
 					if gene not in dict_gene_counter:
 						dict_gene_counter[gene] = gene_counter
 						gene_counter+=1
-					if experiment_counter in dict_exp_genes:
-						if gene in dict_exp_genes[experiment_counter].keys():
-							dict_exp_genes[experiment_counter][gene] +=1
+					if gene in dict_genes_exp:
+						if experiment_counter in dict_genes_exp[gene].keys():
+							dict_genes_exp[gene][experiment_counter] +=1
 						else:
-							dict_exp_genes[experiment_counter][gene] = 1
+							dict_genes_exp[gene][experiment_counter] = 1
 					else:
-						dict_exp_genes[experiment_counter] = {gene : 1}
+						dict_genes_exp[gene] = {experiment_counter : 1}
+
 		experiment_counter+=1
 		current_sam.close()
 		percent = int((curr_sam/nb_sam)*100)
@@ -191,15 +192,18 @@ else:
 	print "Data stored in dictionaries........................................",percent,"%"
 	print "Creating genes-cells matrix...\n"
 	print gene_counter, "genes"
-	print experiment_counter-1, "experiments"
+	print experiment_counter, "experiments"
 
-	matrix = [[0 for x in range(experiment_counter)] for x in range(gene_counter+1)]
-	for key_experiment in dict_exp_genes:
+	matrix = [[0 for x in range(experiment_counter)] for x in range(gene_counter)]
+	#Fill col names:
+	for key_experiment in dict_exp_counter:
 		matrix[0][key_experiment] = dict_exp_counter[key_experiment]
-		for key_gene in dict_exp_genes[key_experiment]:
-			row_gene = dict_gene_counter[key_gene]+1
-			matrix[row_gene][0] = key_gene
-			matrix[row_gene][key_experiment]=dict_exp_genes[key_experiment][key_gene]
+	#Fill matrix values:
+	for key_gene in dict_genes_exp:
+		row_gene = dict_gene_counter[key_gene]
+		matrix[row_gene][0] = key_gene
+		for key_experiment in dict_genes_exp[key_gene]:
+			matrix[row_gene][key_experiment]=dict_genes_exp[key_gene][key_experiment]
 	print "Genes-cells matrix created.........................................",percent,"%"
 	matrix_file = open(sum_path+'matrix.txt', 'w+')
 	for item in matrix:
