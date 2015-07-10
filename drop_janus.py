@@ -15,7 +15,7 @@
 from __future__ import division
 from itertools import izip
 from collections import defaultdict
-from drop_params import *
+from drop_janus_params import *
 import re
 import math
 import os
@@ -138,29 +138,36 @@ print "**      Starting alignment      **"
 print "**********************************"
 print "\n"
 
-nb_noTA = len(files_noTA)
-curr_noTA = 1
-
 for file_noTA in files_noTA:
-	percent = int((curr_noTA/nb_noTA)*100)
-	curr_noTA+=1
-	if os.path.isfile(dir_path_alignment+file_noTA.split(os.extsep)[0]+'.sam.gz'):
-		print "Skipping alignment: "+file_noTA.split(os.extsep)[0]+'.sam.gz already exists...',percent,"%"
+	if os.path.isfile(dir_path_alignment+file_noTA.split(os.extsep)[0]+'_mouse.sam.gz'):
+		print "Skipping alignment: "+file_noTA.split(os.extsep)[0]+'_mouse.sam.gz already exists...',percent,"%"
 	else:
 		print "Starting alignment with bowtie2 for", file_noTA
 		os.system("nice "+bowtie2_dir+" bowtie2 "+bowtie_opt+\
-			" -x "+reference_genome+" -U "+dir_path_fastqs+file_noTA+\
-			" -S "+dir_path_alignment+file_noTA.split(os.extsep)[0]+'.sam')
+			" -x "+mouse_reference_genome+" -U "+dir_path_fastqs+file_noTA+\
+			" -S "+dir_path_alignment+file_noTA.split(os.extsep)[0]+'_mouse.sam')
 		print file_noTA+" aligned..."
-		print file_noTA.split(os.extsep)[0]+'.sam created...'
-		print "...................................................................",percent,"%"
-		os.system("gzip "+dir_path_alignment+file_noTA.split(os.extsep)[0]+'.sam')
+		print file_noTA.split(os.extsep)[0]+'_mouse.sam created...'
+		os.system("gzip "+dir_path_alignment+file_noTA.split(os.extsep)[0]+'_mouse.sam')
 		print "Sam file compressed..."
-		print "...................................................................",percent,"%"
+
+	if os.path.isfile(dir_path_alignment+file_noTA.split(os.extsep)[0]+'_human.sam.gz'):
+		print "Skipping alignment: "+file_noTA.split(os.extsep)[0]+'_human.sam.gz already exists...',percent,"%"
+	else:
+		print "Starting alignment with bowtie2 for", file_noTA
+		os.system("nice "+bowtie2_dir+" bowtie2 "+bowtie_opt+\
+			" -x "+human_reference_genome+" -U "+dir_path_fastqs+file_noTA+\
+			" -S "+dir_path_alignment+file_noTA.split(os.extsep)[0]+'_human.sam')
+		print file_noTA+" aligned..."
+		print file_noTA.split(os.extsep)[0]+'_human.sam created...'
+		os.system("gzip "+dir_path_alignment+file_noTA.split(os.extsep)[0]+'_human.sam')
+		print "Sam file compressed..."
+
 total_time = time.time() - start_time
 print "Reads alignment time:"
 print int(total_time/60),"min",int(total_time%60),"sec"
 
+'''
 ############################### Data gathering ###############################
 print "\n"
 print "**********************************"
@@ -174,7 +181,8 @@ if os.path.isfile(sum_path+'matrix.txt'):
 else:
 	gene_counter = 1
 	barcode_counter = 1
-	sam_file = gzip.open(dir_path_alignment+file_noTA.split(os.extsep)[0]+'.sam.gz','rb')
+	mouse_sam_file = gzip.open(dir_path_alignment+file_noTA.split(os.extsep)[0]+'_mouse.sam.gz','rb')
+	human_sam_file = gzip.open(dir_path_alignment+file_noTA.split(os.extsep)[0]+'_human.sam.gz','rb')
 	#umi_file = open(fastq1_path+'_umi.txt','r')
 	list_f = os.listdir(dir_path_fastqs)
 	barcode_list = [f for f in list_f if '_barcode.txt' in f]
@@ -203,30 +211,32 @@ else:
 	barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
 	print "Storing data in dictionaries..."
 	while True:
-		line=sam_file.readline()
+		mouse_line=mouse_sam_file.readline()
+		human_line=human_sam_file.readline()
 		if not line:
 			break
 		else:
-			columns = line.split("\t")
-			gene = columns[2]
+			mouse_columns = mouse_line.split("\t")
+			mouse_gene = columns[2]
 			barcode = barcode_file2.readline()
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
-			if gene != '*' and barcode in dict_barcode_occurences:
-				if gene not in dict_gene_counter:
-					dict_gene_counter[gene] = gene_counter
-					gene_counter+=1
-				if barcode not in dict_barcode_counter:
-					dict_barcode_counter[barcode] = barcode_counter
-					barcode_counter+=1
-				if gene in dict_genes_barcode:
-					if barcode in dict_genes_barcode[gene].keys():
-						dict_genes_barcode[gene][barcode] +=1
+			if barcode in dict_barcode_occurences:
+				if gene != '*':
+					if gene not in dict_gene_counter:
+						dict_gene_counter[gene] = gene_counter
+						gene_counter+=1
+					if barcode not in dict_barcode_counter:
+						dict_barcode_counter[barcode] = barcode_counter
+						barcode_counter+=1
+					if gene in dict_genes_barcode:
+						if barcode in dict_genes_barcode[gene].keys():
+							dict_genes_barcode[gene][barcode] +=1
+						else:
+							dict_genes_barcode[gene][barcode] = 1
 					else:
-						dict_genes_barcode[gene][barcode] = 1
-				else:
-					dict_genes_barcode[gene] = {barcode : 1}
+						dict_genes_barcode[gene] = {barcode : 1}
 	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
@@ -249,6 +259,8 @@ else:
 		matrix_file.write('\t'.join([str(i) for i in item])+'\n')
 	matrix_file.close()
 print "Ready for PCA..."
+
+'''
 print "\n"
 print "**********************************"
 print "***********Pipeline end***********"

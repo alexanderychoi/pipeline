@@ -26,8 +26,7 @@ import gzip
 def round_figures(x, n):
 	return round(x, int(n - math.ceil(math.log10(abs(x)))))
 
-modified = False
-
+'''
 #Getting a files list from the directory
 files = os.listdir(dir_path_fastqs)
 #Cleaning list of files in the directory(removing *noTA.fastq and *umi.txt files):
@@ -50,7 +49,7 @@ curr_fastq = 1
 for f1 in fastq_files:
 	percent = int((curr_fastq/nb_fastqs)*100)
 	curr_fastq+=1
-	if os.path.isfile(dir_path_fastqs+f1.split(os.extsep)[0]+'_noTA.fastq'):
+	if os.path.isfile(dir_path_fastqs+f1.split(os.extsep)[0]+'_noTA.fastq.gz'):
 		print f1
 		print "\tFiles already preprocessed. Moving on to other files...",percent,"%"
 	else:
@@ -64,7 +63,7 @@ for f1 in fastq_files:
 		print f1
 		print "\tReading file..."
 		print "\tWriting file..."
-		file_noTA = gzip.open(fastq1_path+'_noTA.fastq', 'wb')
+		file_noTA = gzip.open(fastq1_path+'_noTA.fastq.gz', 'wb')
 		#Stats about the trimming process
 		total_reads = 0
 		while True:
@@ -103,13 +102,13 @@ for f1 in fastq_files:
 		print "\tTotal reads: ",total_reads
 		print "...................................................................",percent,"%"
 
-
+'''
 ############################### ALIGNMENT ###############################
 start_time = time.time()
 #Listing *_noTA.fastq files:
 preprocessed_files = os.listdir(dir_path_fastqs)
 #Cleaning list of files in the directory (Only *noTA.fastq files):
-files_noTA = [f for f in preprocessed_files if 'noTA' in f]
+files_noTA = [f for f in preprocessed_files if 'fastq.gz' in f]
 files_noTA.sort()
 bowtie_opt = ' '.join(bowtie2_options)
 print "\n"
@@ -120,7 +119,7 @@ print "\n"
 
 nb_noTA = len(files_noTA)
 curr_noTA = 1
-
+print files_noTA
 for file_noTA in files_noTA:
 	percent = int((curr_noTA/nb_noTA)*100)
 	curr_noTA+=1
@@ -188,11 +187,11 @@ else:
 		current_sam.close()
 		percent = int((curr_sam/nb_sam)*100)
 		curr_sam+=1
-		print percent,"%"
+		print "...................................................................",percent,"%"
 	print "Data stored in dictionaries........................................",percent,"%"
 	print "Creating genes-cells matrix...\n"
 	print gene_counter, "genes"
-	print experiment_counter, "experiments"
+	print experiment_counter-1, "experiments"
 
 	matrix = [[0 for x in range(experiment_counter)] for x in range(gene_counter)]
 	#Fill col names:
