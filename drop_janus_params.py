@@ -18,9 +18,11 @@
 
 ####Path to .fastq files
 dir_path_fastqs = '../data/Project_DropSeq_Janus/Sample_1/fastqs/'
+#dir_path_fastqs = '../data/fastq_micro/fastqs/'
 
 ####Path to .sam files
 dir_path_alignment = '../data/Project_DropSeq_Janus/Sample_1/alignment/'
+#dir_path_alignment = '../data/fastq_micro/alignment/'
 
 ####Path to the reference genome files
 mouse_reference_genome = '../reference_genomes/mm9/Transcriptome/transcriptome'
@@ -59,6 +61,6 @@ bowtie2_dir=''
 #Server processors
 processors = 8
 #Less sensitive 
-bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--no-hd', '--met', '20']
+#bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
 #very sensitive
-#bowtie2_options = { '-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50','-p', num2str(params.processors)};
+bowtie2_options = ['-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']

@@ -66,6 +66,6 @@ bowtie2_dir=''
 #Server processors
 processors = 8
 #Less sensitive 
-bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '--local', '-p', str(processors), '--no-hd', '--met', '20']
+bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '--local', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
 #very sensitive
 #bowtie2_options = { '-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50','-p', num2str(params.processors)};
