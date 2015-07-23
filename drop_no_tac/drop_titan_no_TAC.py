@@ -215,6 +215,7 @@ else:
 				columns=line.split(' ')
 				gene_NM = columns[0][1:]
 				gene_name = columns[1][5:]
+				gene_name = gene_name.replace('\n','')
 				dict_genes_names[gene_NM]=gene_name
 	fasta_file.close()
 
@@ -261,7 +262,8 @@ else:
 			col_num = dict_barcode_counter[key_barcode]
 			matrix[row_num][col_num]=dict_genes_barcode[key_gene][key_barcode]
 	print "Genes-cells matrix created.........................................",percent,"%"
-	matrix_file = open(sum_path+'matrix.txt', 'w+')
+	name=os.path.basename(os.path.normpath(sum_path))
+	matrix_file = open(sum_path+name+'_matrix.txt', 'w+')
 	for item in matrix:
 		matrix_file.write('\t'.join([str(i) for i in item])+'\n')
 	matrix_file.close()
