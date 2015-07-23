@@ -15,8 +15,7 @@
 from __future__ import division
 from itertools import izip
 from collections import defaultdict
-from drop_titan_params import *
-from pympler import asizeof
+from drop_titan_no_TAC_params import *
 import re
 import math
 import os
@@ -94,7 +93,6 @@ for f1, f2 in grouped(fastq_files, 2):
 				break
 			else:
 				total_reads+=1
-			#if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
 			if tso not in f2_line2:
 				barcode = f1_line2[tac_length:tac_length+barcode_length]
 				umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
@@ -117,10 +115,6 @@ for f1, f2 in grouped(fastq_files, 2):
 					file_noTA.write(f1_line3)
 					file_noTA.write(f2_line4)
 
-			if total_reads%20000000 == 0:
-				print "Seq dictionary size:"
-				print (asizeof.asizeof(seq_dictionary))/1000000000,"GB"
-				seq_dictionary.update(dict(seq_dictionary))
 		#file_umi.close()
 		file_barcode.close()
 		file1_fastq.close()
@@ -209,6 +203,21 @@ else:
 	barcode_file.close()
 	barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
 	print "Storing data in dictionaries..."
+
+	fasta_file = open(reference_fasta,'r')
+	dict_genes_names = defaultdict(str)
+	while True:
+		line=fasta_file.readline()
+		if not line:
+			break
+		else:
+			if line[:1]=='>':
+				columns=line.split(' ')
+				gene_NM = columns[0][1:]
+				gene_name = columns[1][5:]
+				dict_genes_names[gene_NM]=gene_name
+	fasta_file.close()
+
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -246,7 +255,8 @@ else:
 		matrix[0][col_num] = key_barcode
 	for key_gene in dict_genes_barcode:
 		row_num = dict_gene_counter[key_gene]
-		matrix[row_num][0] = key_gene
+		#matrix[row_num][0] = key_gene
+		matrix[row_num][0] = dict_genes_names[key_gene]
 		for key_barcode in dict_genes_barcode[key_gene]:
 			col_num = dict_barcode_counter[key_barcode]
 			matrix[row_num][col_num]=dict_genes_barcode[key_gene][key_barcode]

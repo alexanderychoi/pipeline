@@ -1,6 +1,7 @@
 # -*-coding:Utf-8 -*
 from collections import defaultdict
 import random
+from pympler import asizeof
 
 seq_length = 50
 
@@ -29,25 +30,36 @@ print bit_seq2
 number_of_masks = 30
 random_bits_per_mask = 25
 random.seed()
-matrix = [[random.randint(0,seq_length*2) for x in range(random_bits_per_mask)] for x in range(number_of_masks)]
+matrix = [[random.randint(0,(seq_length*2)-1) for x in range(random_bits_per_mask)] for x in range(number_of_masks)]
 
 bit_seq_list = [bit_seq1, bit_seq1copie, bit_seq1false, bit_seq2]
+umi_list = [umi1, umi1copie, umi1false, umi2]
 
 for i in range(number_of_masks):
 	print matrix[i]
 
-for j in matrix[0]:
-	print matrix[0][j]
-
-'''
-for bit_sequence in bit_seq_list
-	for i in range(number_of_masks):
-		for j in
-'''
-
-
-
-
-
-
 seq_dictionary = defaultdict(list)
+for bit_sequence,umi in zip(bit_seq_list,umi_list):
+	bit_code = ''
+	for i in range(number_of_masks):
+		bit_list = []
+		for j in range(random_bits_per_mask):
+			bit_list.append(bit_sequence[matrix[i][j]])
+		print bit_list
+		sum_bits = 0
+		for bit in bit_list:
+			sum_bits=sum_bits^int(bit)
+		print sum_bits
+		bit_code=bit_code+str(sum_bits)
+	print bit_code
+	int_code = int(bit_code,2)
+	print int_code
+	if int_code in seq_dictionary:
+		if umi not in seq_dictionary[int_code]:
+			seq_dictionary[int_code].append(umi)
+	else:
+		seq_dictionary[int_code].append(umi)
+print seq_dictionary
+print asizeof.asizeof(seq_dictionary)
+seq_dictionary.update(dict(seq_dictionary))
+print asizeof.asizeof(seq_dictionary)
