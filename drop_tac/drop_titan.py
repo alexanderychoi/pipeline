@@ -206,21 +206,6 @@ else:
 	barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
 	print "Storing data in dictionaries..."
 
-	fasta_file = open(reference_fasta,'r')
-	dict_genes_names = defaultdict(str)
-	while True:
-		line=fasta_file.readline()
-		if not line:
-			break
-		else:
-			if line[:1]=='>':
-				columns=line.split(' ')
-				gene_NM = columns[0][1:]
-				gene_name = columns[1][5:]
-				gene_name = gene_name.replace('\n','')
-				dict_genes_names[gene_NM]=gene_name
-	fasta_file.close()
-
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -228,6 +213,7 @@ else:
 		else:
 			columns = line.split("\t")
 			gene = columns[2]
+			gene = gene.upper()
 			barcode = barcode_file2.readline()
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
@@ -258,8 +244,7 @@ else:
 		matrix[0][col_num] = key_barcode
 	for key_gene in dict_genes_barcode:
 		row_num = dict_gene_counter[key_gene]
-		#matrix[row_num][0] = key_gene
-		matrix[row_num][0] = dict_genes_names[key_gene]
+		matrix[row_num][0] = key_gene
 		for key_barcode in dict_genes_barcode[key_gene]:
 			col_num = dict_barcode_counter[key_barcode]
 			matrix[row_num][col_num]=dict_genes_barcode[key_gene][key_barcode]
