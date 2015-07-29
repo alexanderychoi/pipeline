@@ -184,6 +184,7 @@ else:
 	barcode_file = open(dir_path_fastqs+barcode_list[0],'r')
 	dict_genes_barcode = defaultdict(dict)
 	dict_gene_counter = defaultdict(int)
+	dict_gene_names = defaultdict(str)
 	dict_barcode_counter = defaultdict(int)
 	dict_barcode_occurences = defaultdict(str)
 	print "Creating barcode occurence dictionary..."
@@ -206,6 +207,25 @@ else:
 	barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
 	print "Storing data in dictionaries..."
 
+	fasta_file = open(fasta_path,'r')
+	while True:
+		line = fasta_file.readline()
+		if not line:
+			break
+		else:
+			if line[:1] == '>':
+				gene_symbol=line.split(' ')[1]
+				gene_symbol=gene_symbol[5:]
+				gene_symbol=gene_symbol.replace('\n','')
+				if gene_symbol not in dict_gene_counter:
+					dict_gene_counter[gene_symbol] = gene_counter
+					gene_counter+=1
+				gene_nm=line.split(' ')[0]
+				gene_nm=gene_nm[1:]
+				gene_nm=gene_nm.replace('\n','')
+				dict_gene_names[gene_nm] = gene_symbol
+	fasta_file.close()
+
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -213,15 +233,14 @@ else:
 		else:
 			columns = line.split("\t")
 			gene = columns[2]
+			gene=gene.replace('\n','')
+			gene=gene.replace(' ','')
 			gene = gene.upper()
 			barcode = barcode_file2.readline()
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if gene != '*' and barcode in dict_barcode_occurences:
-				if gene not in dict_gene_counter:
-					dict_gene_counter[gene] = gene_counter
-					gene_counter+=1
 				if barcode not in dict_barcode_counter:
 					dict_barcode_counter[barcode] = barcode_counter
 					barcode_counter+=1
@@ -242,9 +261,11 @@ else:
 	for key_barcode in dict_barcode_counter:
 		col_num = dict_barcode_counter[key_barcode]
 		matrix[0][col_num] = key_barcode
-	for key_gene in dict_genes_barcode:
-		row_num = dict_gene_counter[key_gene]
-		matrix[row_num][0] = key_gene
+	for key_gene in dict_gene_names:
+		row_num = dict_gene_counter[dict_gene_names[key_gene]]
+		matrix[row_num][0] = dict_gene_names[key_gene]
+	for key_gene in dict_gene_names:
+		row_num = dict_gene_counter[dict_gene_names[key_gene]]
 		for key_barcode in dict_genes_barcode[key_gene]:
 			col_num = dict_barcode_counter[key_barcode]
 			matrix[row_num][col_num]=dict_genes_barcode[key_gene][key_barcode]

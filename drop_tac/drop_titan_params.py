@@ -17,26 +17,27 @@
 #######################################
 
 ####Path to .fastq files
-dir_path_fastqs = '../../data/DS3/sample2_bis/fastqs/'
+dir_path_fastqs = '../../../RNAseq_files/DS2bis/fastqs/'
 #dir_path_fastqs = '../../data/DS2/fastqs/'
 #dir_path_fastqs = '../../data/drop_test/fastqs/'
 #dir_path_fastqs = '../../data/fastqs_titan/fastqs/'
 #dir_path_fastqs = '../../data/fastq_micro/fastqs/'
 
 ####Path to .sam files
-dir_path_alignment = '../../data/DS3/sample2_bis/alignment/'
+dir_path_alignment = '../../../RNAseq_files/DS2bis/alignment/'
 #dir_path_alignment = '../data/DS2/alignment/'
 #dir_path_alignment = '../data/drop_test/alignment/'
 #dir_path_alignment = '../data/fastqs_titan/alignment/'
 #dir_path_alignment = '../data/fastq_micro/alignment/'
 
 ####Path to the reference genome files
-#reference_genome = '../reference_genomes/mm9/Transcriptome/transcriptome'
-#reference_genome = '../reference_genomes/Homo_sapiens/UCSC/hg19/cds'
-reference_genome = '../../reference_genomes/Human_Mouse/transcriptome'
+reference_genome = '../../reference_genomes/mm9/Transcriptome/transcriptome'
+#reference_genome = '../../reference_genomes/Homo_sapiens/UCSC/hg19/cds'
+#reference_genome = '../../reference_genomes/Human_Mouse/transcriptome'
 
-#### Path to the fasta file:
-reference_fasta = '../../reference_genomes/Human_Mouse/transcripts.fa'
+#### Path to the species fasta file
+fasta_path = '../../reference_genomes/mm9/Transcriptome/transcripts.fa'
+
 
 #######################################
 ## 									 ##
@@ -62,7 +63,7 @@ barcode_length = 12
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
 ####Occurence threshold:
-occ_threshold = 500
+occ_threshold = 5000
 
 #######################
 ##    Bowtie2 var    ##
