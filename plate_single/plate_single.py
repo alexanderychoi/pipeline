@@ -156,8 +156,30 @@ else:
 	gene_counter = 1
 	experiment_counter = 1
 	dict_genes_exp = defaultdict(dict)
+	dict_gene_names = defaultdict(dict)
 	dict_gene_counter = defaultdict(int)
 	dict_exp_counter = defaultdict(str)
+
+	fasta_file = open(fasta_path,'r')
+	while True:
+		line = fasta_file.readline()
+		if not line:
+			break
+		else:
+			if line[:1] == '>':
+				gene_symbol=line.split(' ')[1]
+				gene_symbol=gene_symbol[5:]
+				gene_symbol=gene_symbol.replace('\n','')
+				if gene_symbol not in dict_gene_counter:
+					dict_gene_counter[gene_symbol] = gene_counter
+					gene_counter+=1
+				gene_nm=line.split(' ')[0]
+				gene_nm=gene_nm[1:]
+				gene_nm=gene_nm.replace('\n','')
+				dict_gene_names[gene_nm] = gene_symbol
+	fasta_file.close()
+
+
 	print "Checking SAM files..."
 	for sam_file in sam_files:
 		current_sam = open(dir_path_alignment+sam_file,'r')
@@ -172,9 +194,6 @@ else:
 				gene = columns[2]
 				#If read aligned, columns[2] is different from '*'
 				if gene != '*':
-					if gene not in dict_gene_counter:
-						dict_gene_counter[gene] = gene_counter
-						gene_counter+=1
 					if gene in dict_genes_exp:
 						if experiment_counter in dict_genes_exp[gene].keys():
 							dict_genes_exp[gene][experiment_counter] +=1
@@ -197,12 +216,14 @@ else:
 	#Fill col names:
 	for key_experiment in dict_exp_counter:
 		matrix[0][key_experiment] = dict_exp_counter[key_experiment]
+	for key_gene in dict_gene_names:
+		row_num = dict_gene_counter[dict_gene_names[key_gene]]
+		matrix[row_num][0] = dict_gene_names[key_gene]
 	#Fill matrix values:
-	for key_gene in dict_genes_exp:
-		row_gene = dict_gene_counter[key_gene]
-		matrix[row_gene][0] = key_gene
+	for key_gene in dict_gene_names:
+		row_num = dict_gene_counter[dict_gene_names[key_gene]]
 		for key_experiment in dict_genes_exp[key_gene]:
-			matrix[row_gene][key_experiment]=dict_genes_exp[key_gene][key_experiment]
+			matrix[row_gene][key_experiment]+=dict_genes_exp[key_geneouai][key_experiment]
 	print "Genes-cells matrix created.........................................",percent,"%"
 	matrix_file = open(sum_path+'matrix.txt', 'w+')
 	for item in matrix:

@@ -268,7 +268,7 @@ else:
 		row_num = dict_gene_counter[dict_gene_names[key_gene]]
 		for key_barcode in dict_genes_barcode[key_gene]:
 			col_num = dict_barcode_counter[key_barcode]
-			matrix[row_num][col_num]=dict_genes_barcode[key_gene][key_barcode]
+			matrix[row_num][col_num]+=dict_genes_barcode[key_gene][key_barcode]
 	print "Genes-cells matrix created.........................................",percent,"%"
 	name=os.path.basename(os.path.normpath(sum_path))
 	matrix_file = open(sum_path+name+'_matrix.txt', 'w+')
