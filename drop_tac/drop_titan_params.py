@@ -54,7 +54,7 @@ fasta_path = '../../reference_genomes/mm9/Transcriptome/transcripts.fa'
 tac_length = 3
 
 ####umi length:
-umi_length = 5
+umi_length = 8
 
 ####barcode length
 barcode_length = 12
