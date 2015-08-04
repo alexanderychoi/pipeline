@@ -74,7 +74,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		print "\tWriting files..."
 		#file_noTA = open(fastq1_path+'_noTA.fastq', 'w+')
 		file_noTA = open(fastq1_path+'_noTA.fastq', 'w+', 1)
-		file_umi = open(fastq1_path+'_umi.txt', 'w+',1)
+		#file_umi = open(fastq1_path+'_umi.txt', 'w+',1)
 		file_barcode = open(fastq1_path+'_barcode.txt', 'w+', 1)
 		#Stats about the trimming process
 		total_reads = 0
@@ -124,9 +124,9 @@ for f1, f2 in grouped(fastq_files, 2):
 						seq_and_umi_dictionary[seq_and_umi]=1
 
 
-		for key in seq_and_umi_dictionary:
-			file_umi.write(str(seq_and_umi_dictionary[key])+'\n')
-		file_umi.close()
+		#for key in seq_and_umi_dictionary:
+		#	file_umi.write(str(seq_and_umi_dictionary[key])+'\n')
+		#file_umi.close()
 		seq_and_umi_dictionary=None
 		seq_dictionary=None
 		file_barcode.close()
@@ -252,16 +252,19 @@ else:
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if gene != '*' and barcode in dict_barcode_occurences:
-				if barcode not in dict_barcode_counter:
-					dict_barcode_counter[barcode] = barcode_counter
-					barcode_counter+=1
-				if gene in dict_genes_barcode:
-					if barcode in dict_genes_barcode[gene].keys():
-						dict_genes_barcode[gene][barcode] +=1
-					else:
-						dict_genes_barcode[gene][barcode] = 1
-				else:
-					dict_genes_barcode[gene] = {barcode : 1}
+				if 'XS:' not in line:
+					AS_score = int(columns[11][5:])
+					if AS_score>=-3:
+						if barcode not in dict_barcode_counter:
+							dict_barcode_counter[barcode] = barcode_counter
+							barcode_counter+=1
+						if gene in dict_genes_barcode:
+							if barcode in dict_genes_barcode[gene].keys():
+								dict_genes_barcode[gene][barcode] +=1
+							else:
+								dict_genes_barcode[gene][barcode] = 1
+						else:
+							dict_genes_barcode[gene] = {barcode : 1}
 	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
