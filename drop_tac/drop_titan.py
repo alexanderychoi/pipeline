@@ -67,13 +67,14 @@ for f1, f2 in grouped(fastq_files, 2):
 		file2_fastq = gzip.open(fastq2_path+'.fastq.gz','rb')
 		#Dictionary containing (seq)-(umis list) pairs
 		seq_dictionary = defaultdict(list)
+		seq_and_umi_dictionary = defaultdict(int)
 		print f1
 		print f2
 		print "\tReading files..."
 		print "\tWriting files..."
 		#file_noTA = open(fastq1_path+'_noTA.fastq', 'w+')
 		file_noTA = open(fastq1_path+'_noTA.fastq', 'w+', 1)
-		#file_umi = open(fastq1_path+'_umi.txt', 'w+')
+		file_umi = open(fastq1_path+'_umi.txt', 'w+',1)
 		file_barcode = open(fastq1_path+'_barcode.txt', 'w+', 1)
 		#Stats about the trimming process
 		total_reads = 0
@@ -97,6 +98,7 @@ for f1, f2 in grouped(fastq_files, 2):
 				if tso not in f2_line2:
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
 					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
+					seq_and_umi = f2_line2+umi
 					#Checking trimmed sequence length
 					if f2_line2 in seq_dictionary:
 						if umi not in seq_dictionary[f2_line2]:
@@ -116,7 +118,16 @@ for f1, f2 in grouped(fastq_files, 2):
 						file_noTA.write(f1_line3)
 						file_noTA.write(f2_line4)
 
-		#file_umi.close()
+					if seq_and_umi in seq_and_umi_dictionary:
+						seq_and_umi_dictionary[seq_and_umi]+=1
+					else:
+						seq_and_umi_dictionary[seq_and_umi]=1
+
+
+		for key in seq_and_umi_dictionary:
+			file_umi.write(str(seq_and_umi_dictionary[key])+'\n')
+		file_umi.close()
+		seq_and_umi_dictionary=None
 		seq_dictionary=None
 		file_barcode.close()
 		file1_fastq.close()
