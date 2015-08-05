@@ -67,7 +67,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		file2_fastq = gzip.open(fastq2_path+'.fastq.gz','rb')
 		#Dictionary containing (seq)-(umis list) pairs
 		seq_dictionary = defaultdict(list)
-		seq_and_umi_dictionary = defaultdict(int)
+		#seq_and_umi_dictionary = defaultdict(int)
 		print f1
 		print f2
 		print "\tReading files..."
@@ -118,16 +118,16 @@ for f1, f2 in grouped(fastq_files, 2):
 						file_noTA.write(f1_line3)
 						file_noTA.write(f2_line4)
 
-					if seq_and_umi in seq_and_umi_dictionary:
-						seq_and_umi_dictionary[seq_and_umi]+=1
-					else:
-						seq_and_umi_dictionary[seq_and_umi]=1
+					#if seq_and_umi in seq_and_umi_dictionary:
+						#seq_and_umi_dictionary[seq_and_umi]+=1
+					#else:
+						#seq_and_umi_dictionary[seq_and_umi]=1
 
 
 		#for key in seq_and_umi_dictionary:
 		#	file_umi.write(str(seq_and_umi_dictionary[key])+'\n')
 		#file_umi.close()
-		seq_and_umi_dictionary=None
+		#seq_and_umi_dictionary=None
 		seq_dictionary=None
 		file_barcode.close()
 		file1_fastq.close()
