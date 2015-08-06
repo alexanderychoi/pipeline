@@ -17,14 +17,14 @@
 #######################################
 
 ####Path to .fastq files
-dir_path_fastqs = '../../../RNAseq_files/DS2bis/fastqs/'
+dir_path_fastqs = '../../../RNAseq_files/DS2/fastqs/'
 #dir_path_fastqs = '../../data/DS2/fastqs/'
 #dir_path_fastqs = '../../data/drop_test/fastqs/'
 #dir_path_fastqs = '../../data/fastqs_titan/fastqs/'
 #dir_path_fastqs = '../../data/fastq_micro/fastqs/'
 
 ####Path to .sam files
-dir_path_alignment = '../../../RNAseq_files/DS2bis/alignment/'
+dir_path_alignment = '../../../RNAseq_files/DS2/alignment/'
 #dir_path_alignment = '../data/DS2/alignment/'
 #dir_path_alignment = '../data/drop_test/alignment/'
 #dir_path_alignment = '../data/fastqs_titan/alignment/'
@@ -57,7 +57,7 @@ tac_length = 3
 umi_length = 8
 
 ####barcode length
-barcode_length = 12
+barcode_length = 10
 
 ####Tso sequence
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
