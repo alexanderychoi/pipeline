@@ -57,7 +57,7 @@ tac_length = 3
 umi_length = 8
 
 ####barcode length
-barcode_length = 12
+barcode_length = 10
 
 ####Tso sequence
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'

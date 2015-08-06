@@ -252,19 +252,18 @@ else:
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if gene != '*' and barcode in dict_barcode_occurences:
-				if 'XS:' not in line:
-					AS_score = int(columns[11][5:])
-					if AS_score>=-3:
-						if barcode not in dict_barcode_counter:
-							dict_barcode_counter[barcode] = barcode_counter
-							barcode_counter+=1
-						if gene in dict_genes_barcode:
-							if barcode in dict_genes_barcode[gene].keys():
-								dict_genes_barcode[gene][barcode] +=1
-							else:
-								dict_genes_barcode[gene][barcode] = 1
+				AS_score = int(columns[11][5:])
+				if AS_score>=-3:
+					if barcode not in dict_barcode_counter:
+						dict_barcode_counter[barcode] = barcode_counter
+						barcode_counter+=1
+					if gene in dict_genes_barcode:
+						if barcode in dict_genes_barcode[gene].keys():
+							dict_genes_barcode[gene][barcode] +=1
 						else:
-							dict_genes_barcode[gene] = {barcode : 1}
+							dict_genes_barcode[gene][barcode] = 1
+					else:
+						dict_genes_barcode[gene] = {barcode : 1}
 	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
