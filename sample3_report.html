@@ -25,11 +25,11 @@
 			<br>
 			<h1 class="text-primary">Preprocessing results</h1>
 			<br>
-			<div id="preprocessing_bar" style="height: 300px; width: 50%;">
+			<div id="preprocessing_bar" style="height: 300px; width: 50%;"></div>
 			<br>
 			<h1 class="text-primary">Dimsmissed reads information</h1>
 			<br>
-			<div id="dismissed_info" style="height: 300px; width: 50%;">
+			<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
 
 
 			</body>
@@ -38,60 +38,64 @@
 
 		<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
 		<script type="text/javascript">
-		window.onload = function () {
-			var chart = new CanvasJS.Chart("preprocessing_bar", {
-				theme: "theme2",//theme1
-				title:{
-					text: "
-				},
-				animationEnabled: true,   // change to true
-				data: [              
-				{
-					// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
-					type: "column",
-					dataPoints: [
-						{ label: "Total reads",  y: 6488073  },
+			function preprocessingPlot() {
+				var chart = new CanvasJS.Chart("preprocessing_bar", {
+							theme: "theme2",//theme1
+							title:{
+								text: ""
+							},
+							animationEnabled: true,   // change to true
+							data: [              
+							{
+								// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
+								type: "column",
+								dataPoints: [
+									{ label: "Total reads",  y: 6488073  },
 						{ label: "Saved reads", y: 2637296  },
 						{ label: "Dismissed reads", y: 3850777  }
-					]
-				}
-				]
-			});
-			chart.render();
-		}
-		</script>
+								]
+							}
+							]
+						});
+						chart.render();
 
-		<script type="text/javascript">
-			window.onload = function () {
-				var chart = new CanvasJS.Chart("dismissed_info",
-				{
-					title:{
-						text: ""
-					},
-		                        animationEnabled: true,
-					theme: "theme2",
-					data: [
-					{        
-						type: "doughnut",
-						indexLabelFontFamily: "Garamond",       
-						indexLabelFontSize: 20,
-						startAngle:0,
-						indexLabelFontColor: "dimgrey",       
-						indexLabelLineColor: "darkgrey", 
-						toolTipContent: "{y} %", 					
-
-						dataPoints: [
-						{  y: 16, label: "Contains TSO {y}%" },
-						{  y: 2951500, label: "No TAC {y}%" },
-						{  y: 899261, label: "Redundant(seq-umi) {y}%" }
-
-						]
-					}
-					]
-				});
-				chart.render();
 			}
+
+			function dismissedInfo(){
+				var chart1 = new CanvasJS.Chart("dismissed_info",
+							{
+								title:{
+									text: ""
+								},
+					                        animationEnabled: true,
+								theme: "theme2",
+								data: [
+								{        
+									type: "doughnut",
+									indexLabelFontFamily: "Garamond",       
+									indexLabelFontSize: 20,
+									startAngle:0,
+									indexLabelFontColor: "dimgrey",       
+									indexLabelLineColor: "darkgrey", 
+ 					
+
+									dataPoints: [
+									{  y: 16, label: "Contains TSO" },
+						{  y: 2951500, label: "No TAC" },
+						{  y: 899261, label: "Redundant" }
+
+									]
+								}
+								]
+							});
+							chart1.render();
+
+			}
+
+			function loadAll() {
+				preprocessingPlot();
+				dismissedInfo();
+			}
+
+			window.onload = loadAll();
 		</script>
-
-
-	

@@ -252,6 +252,9 @@ else:
 				dict_gene_names[gene_nm] = gene_symbol
 	fasta_file.close()
 
+	sam_gene=0
+	sam_star=0
+	dict_quality=defaultdict(list)
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -266,9 +269,15 @@ else:
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
+			if barcode not in dict_quality:
+				dict_quality[barcode][0]=0
+				dict_quality[barcode][1]=0
+
 			if gene != '*' and barcode in dict_barcode_occurences:
 				AS_score = int(columns[11][5:])
+				sam_gene+=1
 				if AS_score>=-3:
+					dict_quality[barcode][1]+=1
 					if barcode not in dict_barcode_counter:
 						dict_barcode_counter[barcode] = barcode_counter
 						barcode_counter+=1
@@ -279,6 +288,12 @@ else:
 							dict_genes_barcode[gene][barcode] = 1
 					else:
 						dict_genes_barcode[gene] = {barcode : 1}
+				else:
+					dict_quality[barcode][0]+=1
+			else:
+				sam_star+=1
+	alignment_score=sam_gene/(sam_gene+sam_star)
+	alignment_score=round(alignment_score)
 	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
@@ -339,11 +354,22 @@ else:
 			<br>
 			<h1 class="text-primary">Preprocessing results</h1>
 			<br>
-			<div id="preprocessing_bar" style="height: 300px; width: 50%;">
+			<div id="preprocessing_bar" style="height: 300px; width: 50%;"></div>
 			<br>
-			<h1 class="text-primary">Dimsmissed reads information</h1>
+			<h1 class="text-primary">Dismissed reads information</h1>
 			<br>
-			<div id="dismissed_info" style="height: 300px; width: 50%;">
+			<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Alignment rate</h1>
+			<br>
+			<h1>''')
+	html_file.write(str(alignment_score))
+	html_file.write('''</h1>
+			<br>
+			<h1 class="text-primary">Reads per cell distribution</h1>
+			<br>
+			<div id="readsDistribution" style="height: 300px; width: 50%;"></div>
+			
 
 
 			</body>
@@ -396,7 +422,7 @@ else:
 									startAngle:0,
 									indexLabelFontColor: "dimgrey",       
 									indexLabelLineColor: "darkgrey", 
-									toolTipContent: "{y} %", 					
+					
 
 									dataPoints: [
 									{  y: ''')
@@ -416,9 +442,65 @@ else:
 							chart1.render();
 			}
 
+			function distribution(){
+				var chart2 = new CanvasJS.Chart("readsDistribution",
+				    {
+				      title:{
+				      text: ""   
+				      },
+				      axisY:{
+				        title:"Number of reads"   
+				      },
+				      animationEnabled: true,
+				      data: [
+				      {        
+				        type: "stackedColumn",
+				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        name: "Low quality",
+				        showInLegend: "true",
+				        dataPoints: [''')
+	for key in sorted(dict_quality.keys()):
+		html_file.write('{  y: ',str(dict_quality[key][0]),' label:"', key,'"},\n')
+	html_file.write(''']
+
+				      },  {        
+				        type: "stackedColumn",
+				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        name: "Good quality",
+				        showInLegend: "true",
+				        dataPoints: [''')
+	for key in sorted(dict_quality.keys()):
+		html_file.write('{  y: ',str(dict_quality[key][1]),' label:"', key,'"},\n')
+	html_file.write(''']
+				      }            
+				      ]
+				      ,
+				      legend:{
+				        cursor:"pointer",
+				        itemclick: function(e) {
+				          if (typeof (e.dataSeries.visible) ===  "undefined" || e.dataSeries.visible) {
+					          e.dataSeries.visible = false;
+				          }
+				          else
+				          {
+				            e.dataSeries.visible = true;
+				          }
+				          chart2.render();
+				        }
+				      }
+				    });
+
+				    chart2.render();
+			}
+
+
+
+
+
 			function loadAll() {
 				preprocessingPlot();
 				dismissedInfo();
+				distribution();
 			}
 
 			window.onload = loadAll;
