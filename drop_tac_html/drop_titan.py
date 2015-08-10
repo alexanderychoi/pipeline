@@ -460,7 +460,11 @@ else:
 				        showInLegend: "true",
 				        dataPoints: [''')
 	for key in sorted(dict_quality.keys()):
-		html_file.write('{  y: ',str(dict_quality[key]['low']),' label:"', key,'"},\n')
+		html_file.write('{  y: ')
+		html_file.write(str(dict_quality[key]['low']))
+		html_file.write(' label:"')
+		html_file.write(key)
+		html_file.write('"},\n')
 	html_file.write(''']
 
 				      },  {        
@@ -470,7 +474,11 @@ else:
 				        showInLegend: "true",
 				        dataPoints: [''')
 	for key in sorted(dict_quality.keys()):
-		html_file.write('{  y: ',str(dict_quality[key]['high']),' label:"', key,'"},\n')
+		html_file.write('{  y: ')
+		html_file.write(str(dict_quality[key]['high']))
+		html_file.write(' label:"')
+		html_file.write(key)
+		html_file.write('"},\n')
 	html_file.write(''']
 				      }            
 				      ]
