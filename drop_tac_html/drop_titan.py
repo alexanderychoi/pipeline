@@ -254,7 +254,7 @@ else:
 
 	sam_gene=0
 	sam_star=0
-	dict_quality=defaultdict(list)
+	dict_quality=defaultdict(dict)
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -270,14 +270,14 @@ else:
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if barcode not in dict_quality:
-				dict_quality[barcode][0]=0
-				dict_quality[barcode][1]=0
+				dict_quality[barcode]['low']=0
+				dict_quality[barcode]['high']=0
 
 			if gene != '*' and barcode in dict_barcode_occurences:
 				AS_score = int(columns[11][5:])
 				sam_gene+=1
 				if AS_score>=-3:
-					dict_quality[barcode][1]+=1
+					dict_quality[barcode]['high']+=1
 					if barcode not in dict_barcode_counter:
 						dict_barcode_counter[barcode] = barcode_counter
 						barcode_counter+=1
@@ -289,7 +289,7 @@ else:
 					else:
 						dict_genes_barcode[gene] = {barcode : 1}
 				else:
-					dict_quality[barcode][0]+=1
+					dict_quality[barcode]['low']+=1
 			else:
 				sam_star+=1
 	alignment_score=sam_gene/(sam_gene+sam_star)
@@ -460,7 +460,7 @@ else:
 				        showInLegend: "true",
 				        dataPoints: [''')
 	for key in sorted(dict_quality.keys()):
-		html_file.write('{  y: ',str(dict_quality[key][0]),' label:"', key,'"},\n')
+		html_file.write('{  y: ',str(dict_quality[key]['low']),' label:"', key,'"},\n')
 	html_file.write(''']
 
 				      },  {        
@@ -470,7 +470,7 @@ else:
 				        showInLegend: "true",
 				        dataPoints: [''')
 	for key in sorted(dict_quality.keys()):
-		html_file.write('{  y: ',str(dict_quality[key][1]),' label:"', key,'"},\n')
+		html_file.write('{  y: ',str(dict_quality[key]['high']),' label:"', key,'"},\n')
 	html_file.write(''']
 				      }            
 				      ]
