@@ -367,10 +367,10 @@ else:
 						{ label: "Total reads",  y: ''')
 	html_file.write(total_reads)
 	html_file.write('''  },
-						{ label: "Saved reads", y: '''
+						{ label: "Saved reads", y: ''')
 	html_file.write(saved_reads)
 	html_file.write('''  },
-						{ label: "Dismissed reads", y: '''
+						{ label: "Dismissed reads", y: ''')
 	html_file.write(dismissed_reads)
 	html_file.write('''  }
 					]
@@ -401,13 +401,13 @@ else:
 						toolTipContent: "{y} %", 					
 
 						dataPoints: [
-						{  y: '''
+						{  y: ''')
 	html_file.write(dis_tso)
 	html_file.write(''', label: "Contains TSO {y}%" },
-						{  y: '''
+						{  y: ''')
 	html_file.write(dis_no_tac)
 	html_file.write(''', label: "No TAC {y}%" },
-						{  y: '''
+						{  y: ''')
 	html_file.write(dis_redund)
 	html_file.write(''', label: "Redundant(seq-umi) {y}%" }
 
