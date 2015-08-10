@@ -352,109 +352,77 @@ else:
 
 		<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
 		<script type="text/javascript">
-		window.onload = function () {
-			var chart = new CanvasJS.Chart("preprocessing_bar", {
-				theme: "theme2",//theme1
-				title:{
-					text: "
-				},
-				animationEnabled: true,   // change to true
-				data: [              
-				{
-					// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
-					type: "column",
-					dataPoints: [
-						{ label: "Total reads",  y: ''')
-	html_file.write(str(total_reads))
-	html_file.write('''  },
-						{ label: "Saved reads", y: ''')
-	html_file.write(str(saved_reads))
-	html_file.write('''  },
-						{ label: "Dismissed reads", y: ''')
-	html_file.write(str(dismissed_reads))
-	html_file.write('''  }
-					]
-				}
-				]
-			});
-			chart.render();
-		}
-		</script>
-
-		<script type="text/javascript">
-			window.onload = function () {
-				var chart = new CanvasJS.Chart("dismissed_info",
-				{
-					title:{
-						text: ""
-					},
-		                        animationEnabled: true,
-					theme: "theme2",
-					data: [
-					{        
-						type: "doughnut",
-						indexLabelFontFamily: "Garamond",       
-						indexLabelFontSize: 20,
-						startAngle:0,
-						indexLabelFontColor: "dimgrey",       
-						indexLabelLineColor: "darkgrey", 
-						toolTipContent: "{y} %", 					
-
-						dataPoints: [
-						{  y: ''')
-	html_file.write(str(dis_tso))
-	html_file.write(''', label: "Contains TSO {y}%" },
-						{  y: ''')
-	html_file.write(str(dis_no_tac))
-	html_file.write(''', label: "No TAC {y}%" },
-						{  y: ''')
-	html_file.write(str(dis_redund))
-	html_file.write(''', label: "Redundant(seq-umi) {y}%" }
-
-						]
-					}
-					]
-				});
-				chart.render();
+			function preprocessingPlot() {
+				var chart = new CanvasJS.Chart("preprocessing_bar", {
+							theme: "theme2",//theme1
+							title:{
+								text: ""
+							},
+							animationEnabled: true,   // change to true
+							data: [              
+							{
+								// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
+								type: "column",
+								dataPoints: [
+									{ label: "Total reads",  y: ''')
+				html_file.write(str(total_reads))
+				html_file.write('''  },
+									{ label: "Saved reads", y: ''')
+				html_file.write(str(saved_reads))
+				html_file.write('''  },
+									{ label: "Dismissed reads", y: ''')
+				html_file.write(str(dismissed_reads))
+				html_file.write('''  }
+								]
+							}
+							]
+						});
+						chart.render();
 			}
+
+			function dismissedInfo(){
+				var chart1 = new CanvasJS.Chart("dismissed_info",
+							{
+								title:{
+									text: ""
+								},
+					                        animationEnabled: true,
+								theme: "theme2",
+								data: [
+								{        
+									type: "doughnut",
+									indexLabelFontFamily: "Garamond",       
+									indexLabelFontSize: 20,
+									startAngle:0,
+									indexLabelFontColor: "dimgrey",       
+									indexLabelLineColor: "darkgrey", 
+									toolTipContent: "{y} %", 					
+
+									dataPoints: [
+									{  y: ''')
+				html_file.write(str(dis_tso))
+				html_file.write(''', label: "Contains TSO" },
+									{  y: ''')
+				html_file.write(str(dis_no_tac))
+				html_file.write(''', label: "No TAC" },
+									{  y: ''')
+				html_file.write(str(dis_redund))
+				html_file.write(''', label: "Redundant" }
+
+									]
+								}
+								]
+							});
+							chart1.render();
+			}
+
+			function loadAll() {
+				preprocessingPlot();
+				dismissedInfo();
+			}
+
+			window.onload = loadAll;
 		</script>
-
-
-	''')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
