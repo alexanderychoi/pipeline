@@ -365,13 +365,13 @@ else:
 					type: "column",
 					dataPoints: [
 						{ label: "Total reads",  y: ''')
-	html_file.write(total_reads)
+	html_file.write(str(total_reads))
 	html_file.write('''  },
 						{ label: "Saved reads", y: ''')
-	html_file.write(saved_reads)
+	html_file.write(str(saved_reads))
 	html_file.write('''  },
 						{ label: "Dismissed reads", y: ''')
-	html_file.write(dismissed_reads)
+	html_file.write(str(dismissed_reads))
 	html_file.write('''  }
 					]
 				}
@@ -402,13 +402,13 @@ else:
 
 						dataPoints: [
 						{  y: ''')
-	html_file.write(dis_tso)
+	html_file.write(str(dis_tso))
 	html_file.write(''', label: "Contains TSO {y}%" },
 						{  y: ''')
-	html_file.write(dis_no_tac)
+	html_file.write(str(dis_no_tac))
 	html_file.write(''', label: "No TAC {y}%" },
 						{  y: ''')
-	html_file.write(dis_redund)
+	html_file.write(str(dis_redund))
 	html_file.write(''', label: "Redundant(seq-umi) {y}%" }
 
 						]
