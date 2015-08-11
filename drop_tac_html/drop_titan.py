@@ -243,12 +243,14 @@ else:
 				gene_symbol=line.split(' ')[1]
 				gene_symbol=gene_symbol[5:]
 				gene_symbol=gene_symbol.replace('\n','')
+				gene_symbol=gene_symbol.upper()
 				if gene_symbol not in dict_gene_counter:
 					dict_gene_counter[gene_symbol] = gene_counter
 					gene_counter+=1
 				gene_nm=line.split(' ')[0]
 				gene_nm=gene_nm[1:]
 				gene_nm=gene_nm.replace('\n','')
+				gene_nm=gene_nm.upper()
 				dict_gene_names[gene_nm] = gene_symbol
 	fasta_file.close()
 
