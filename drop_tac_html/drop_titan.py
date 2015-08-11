@@ -270,12 +270,12 @@ else:
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if gene != '*' and barcode in dict_barcode_occurences:
-				if barcode not in dict_quality:
-					dict_quality[barcode]['low']=0
-					dict_quality[barcode]['high']=0
 				AS_score = int(columns[11][5:])
-				sam_gene+=1
+				if barcode not in dict_quality:
+						dict_quality[barcode]['low']=0
+						dict_quality[barcode]['high']=0
 				if AS_score>=-3:
+					sam_gene+=1
 					dict_quality[barcode]['high']+=1
 					if barcode not in dict_barcode_counter:
 						dict_barcode_counter[barcode] = barcode_counter
@@ -289,6 +289,7 @@ else:
 						dict_genes_barcode[gene] = {barcode : 1}
 				else:
 					dict_quality[barcode]['low']+=1
+					sam_star+=1
 			else:
 				sam_star+=1
 	alignment_score=sam_gene/(sam_gene+sam_star)
@@ -359,7 +360,7 @@ else:
 			<br>
 			<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
 			<br>
-			<h1 class="text-primary">Alignment rate</h1>
+			<h1 class="text-primary">Reads used for gene expression quantification</h1>
 			<br>
 			<h1>''')
 	html_file.write(str(alignment_score))
