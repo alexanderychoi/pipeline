@@ -269,11 +269,10 @@ else:
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
-			if barcode not in dict_quality:
-				dict_quality[barcode]['low']=0
-				dict_quality[barcode]['high']=0
-
 			if gene != '*' and barcode in dict_barcode_occurences:
+				if barcode not in dict_quality:
+					dict_quality[barcode]['low']=0
+					dict_quality[barcode]['high']=0
 				AS_score = int(columns[11][5:])
 				sam_gene+=1
 				if AS_score>=-3:
@@ -293,7 +292,7 @@ else:
 			else:
 				sam_star+=1
 	alignment_score=sam_gene/(sam_gene+sam_star)
-	alignment_score=round(alignment_score)
+	alignment_score=round(alignment_score*100)
 	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
@@ -364,7 +363,7 @@ else:
 			<br>
 			<h1>''')
 	html_file.write(str(alignment_score))
-	html_file.write('''</h1>
+	html_file.write('''%</h1>
 			<br>
 			<h1 class="text-primary">Reads per cell distribution</h1>
 			<br>
@@ -455,28 +454,28 @@ else:
 				      data: [
 				      {        
 				        type: "stackedColumn",
-				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        toolTipContent: "{label}<br/><span style='\\"'color: {color};'\\"'><strong>{name}</strong></span>: {y} reads",
 				        name: "Low quality",
 				        showInLegend: "true",
 				        dataPoints: [''')
 	for key in sorted(dict_quality.keys()):
 		html_file.write('{  y: ')
 		html_file.write(str(dict_quality[key]['low']))
-		html_file.write(' label:"')
+		html_file.write(', label:"')
 		html_file.write(key)
 		html_file.write('"},\n')
 	html_file.write(''']
 
 				      },  {        
 				        type: "stackedColumn",
-				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        toolTipContent: "{label}<br/><span style='\\"'color: {color};'\\"'><strong>{name}</strong></span>: {y} reads",
 				        name: "Good quality",
 				        showInLegend: "true",
 				        dataPoints: [''')
 	for key in sorted(dict_quality.keys()):
 		html_file.write('{  y: ')
 		html_file.write(str(dict_quality[key]['high']))
-		html_file.write(' label:"')
+		html_file.write(', label:"')
 		html_file.write(key)
 		html_file.write('"},\n')
 	html_file.write(''']
