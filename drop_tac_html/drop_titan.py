@@ -254,6 +254,7 @@ else:
 
 	sam_gene=0
 	sam_star=0
+	bowtie_al=0
 	dict_quality=defaultdict(dict)
 	while True:
 		line=sam_file.readline()
@@ -269,31 +270,35 @@ else:
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
-			if gene != '*' and barcode in dict_barcode_occurences:
-				AS_score = int(columns[11][5:])
-				if barcode not in dict_quality:
-						dict_quality[barcode]['low']=0
-						dict_quality[barcode]['high']=0
-				if AS_score>=-3:
-					sam_gene+=1
-					dict_quality[barcode]['high']+=1
-					if barcode not in dict_barcode_counter:
-						dict_barcode_counter[barcode] = barcode_counter
-						barcode_counter+=1
-					if gene in dict_genes_barcode:
-						if barcode in dict_genes_barcode[gene].keys():
-							dict_genes_barcode[gene][barcode] +=1
+			if gene != '*':
+				bowtie_al+=1
+				if barcode in dict_barcode_occurences:
+					AS_score = int(columns[11][5:])
+					if barcode not in dict_quality:
+							dict_quality[barcode]['low']=0
+							dict_quality[barcode]['high']=0
+					if AS_score>=-3:
+						sam_gene+=1
+						dict_quality[barcode]['high']+=1
+						if barcode not in dict_barcode_counter:
+							dict_barcode_counter[barcode] = barcode_counter
+							barcode_counter+=1
+						if gene in dict_genes_barcode:
+							if barcode in dict_genes_barcode[gene].keys():
+								dict_genes_barcode[gene][barcode] +=1
+							else:
+								dict_genes_barcode[gene][barcode] = 1
 						else:
-							dict_genes_barcode[gene][barcode] = 1
+							dict_genes_barcode[gene] = {barcode : 1}
 					else:
-						dict_genes_barcode[gene] = {barcode : 1}
-				else:
-					dict_quality[barcode]['low']+=1
-					sam_star+=1
+						dict_quality[barcode]['low']+=1
+						sam_star+=1
 			else:
 				sam_star+=1
 	alignment_score=sam_gene/(sam_gene+sam_star)
 	alignment_score=round(alignment_score*100)
+	bowtie_score=bowtie_al/(bowtie_al+sam_star)
+	bowtie_score=round(bowtie_score*100)
 	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
@@ -359,6 +364,12 @@ else:
 			<h1 class="text-primary">Dismissed reads information</h1>
 			<br>
 			<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Bowtie2 overall alignment rate</h1>
+			<br>
+			<h1>''')
+	html_file.write(str(bowtie_score))
+	html_file.write('''%</h1>
 			<br>
 			<h1 class="text-primary">Reads used for gene expression quantification</h1>
 			<br>
