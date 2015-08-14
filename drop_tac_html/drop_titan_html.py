@@ -277,7 +277,7 @@ else:
 				bowtie_al+=1
 				if barcode in dict_barcode_occurences:
 					AS_score = int(columns[11][5:])
-					if AS_score not in dict_quality_scores:
+					if AS_score not in dict_quality_scores.keys():
 						dict_quality_scores[AS_score]=1
 					else:
 						dict_quality_scores[AS_score]+=1
@@ -534,7 +534,7 @@ else:
 						{
 							type: "column", //change type to bar, line, area, pie, etc
 							dataPoints: [''')
-	for key in dict_quality_scores:
+	for key in dict_quality_scores.keys():
 		html_file.write('{  x: ')
 		html_file.write(str(key))
 		html_file.write(', y: ')

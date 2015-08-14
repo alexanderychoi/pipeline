@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+	<html>
+		<head>
+			<link rel="stylesheet" type="text/css" href="https://bootswatch.com/cerulean/bootstrap.min.css">
+		</head>
+		<body>
+			<nav class="navbar navbar-default">
+			  <div class="container-fluid">
+			    <div class="navbar-header">
+			      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+			        <span class="sr-only">Toggle navigation</span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			      </button>
+			      <a class="navbar-brand" onclick="return false">HTML Report for sample1</a>
+			    </div>
+			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			      	<ul class="nav navbar-nav navbar-right">
+		        		<li><a onclick="return false">Thomson Lab</a></li>
+		      		</ul>
+			    </div>
+			  </div>
+			</nav>
+			<br>
+			<h1 class="text-primary">Preprocessing results</h1>
+			<br>
+			<div id="preprocessing_bar" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Dismissed reads information</h1>
+			<br>
+			<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Bowtie2 overall alignment rate</h1>
+			<br>
+			<h1>70.0%</h1>
+			<br>
+			<h1 class="text-primary">Reads used for gene expression quantification</h1>
+			<br>
+			<h1>38.0%</h1>
+			<br>
+			<h1 class="text-primary">Reads per cell distribution</h1>
+			<br>
+			<div id="readsDistribution" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Quality scores histogram</h1>
+			<br>
+			<div id="qualityScore" style="height: 300px; width: 50%;"></div>
+			
+
+
+			</body>
+		</html>
+
+
+		<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+		<script type="text/javascript">
+			function preprocessingPlot() {
+				var chart = new CanvasJS.Chart("preprocessing_bar", {
+							theme: "theme2",//theme1
+							title:{
+								text: ""
+							},
+							animationEnabled: true,   // change to true
+							data: [              
+							{
+								// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
+								type: "column",
+								dataPoints: [
+									{ label: "Total reads",  y: 6785052  },
+						{ label: "Saved reads", y: 2857732  },
+						{ label: "Dismissed reads", y: 3927320  }
+								]
+							}
+							]
+						});
+						chart.render();
+			}
+
+			function dismissedInfo(){
+				var chart1 = new CanvasJS.Chart("dismissed_info",
+							{
+								title:{
+									text: ""
+								},
+					                        animationEnabled: true,
+								theme: "theme2",
+								data: [
+								{        
+									type: "doughnut",
+									indexLabelFontFamily: "Garamond",       
+									indexLabelFontSize: 20,
+									startAngle:0,
+									indexLabelFontColor: "dimgrey",       
+									indexLabelLineColor: "darkgrey", 
+					
+
+									dataPoints: [
+									{  y: 10, label: "Contains TSO" },
+						{  y: 3235199, label: "No TAC" },
+						{  y: 692111, label: "Redundant" }
+
+									]
+								}
+								]
+							});
+							chart1.render();
+			}
+
+			function distribution(){
+				var chart2 = new CanvasJS.Chart("readsDistribution",
+				    {
+				      title:{
+				      text: ""   
+				      },
+				      axisY:{
+				        title:"Number of reads"   
+				      },
+				      animationEnabled: true,
+				      data: [
+				      {        
+				        type: "stackedColumn",
+				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        name: "Low quality",
+				        showInLegend: "true",
+				        dataPoints: [{  y: 7002, label:"ACTGATGGGC"},
+{  y: 8327, label:"AGGGGGACAC"},
+{  y: 6875, label:"ATAGGCACTT"},
+{  y: 4678, label:"ATGGCACTTT"},
+{  y: 7285, label:"CACTGATGGG"},
+{  y: 4714, label:"CCCTGATGGG"},
+{  y: 17505, label:"CCTGATGGGC"},
+{  y: 7146, label:"GAACCCCTCT"},
+{  y: 11564, label:"GAACCCTCTT"},
+{  y: 5874, label:"GACGCACGAC"},
+{  y: 12714, label:"GACGCACGAT"},
+{  y: 12402, label:"GCCTTCACTA"},
+{  y: 34632, label:"GCCTTCCACT"},
+{  y: 7130, label:"GCCTTCCATA"},
+{  y: 5883, label:"GCTTCCACTA"},
+{  y: 6439, label:"GGCCTTCACT"},
+{  y: 21662, label:"GGCCTTCCAC"},
+{  y: 5473, label:"GTCCTACTCT"},
+{  y: 5983, label:"GTTCTTTGGC"},
+{  y: 4862, label:"TAGGGGGTGA"},
+]
+
+				      },  {        
+				        type: "stackedColumn",
+				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        name: "Good quality",
+				        showInLegend: "true",
+				        dataPoints: [{  y: 22249, label:"ACTGATGGGC"},
+{  y: 24840, label:"AGGGGGACAC"},
+{  y: 21934, label:"ATAGGCACTT"},
+{  y: 13888, label:"ATGGCACTTT"},
+{  y: 23045, label:"CACTGATGGG"},
+{  y: 14706, label:"CCCTGATGGG"},
+{  y: 53903, label:"CCTGATGGGC"},
+{  y: 22131, label:"GAACCCCTCT"},
+{  y: 34683, label:"GAACCCTCTT"},
+{  y: 18915, label:"GACGCACGAC"},
+{  y: 39273, label:"GACGCACGAT"},
+{  y: 31768, label:"GCCTTCACTA"},
+{  y: 87906, label:"GCCTTCCACT"},
+{  y: 18576, label:"GCCTTCCATA"},
+{  y: 15026, label:"GCTTCCACTA"},
+{  y: 15778, label:"GGCCTTCACT"},
+{  y: 58260, label:"GGCCTTCCAC"},
+{  y: 17612, label:"GTCCTACTCT"},
+{  y: 16908, label:"GTTCTTTGGC"},
+{  y: 13952, label:"TAGGGGGTGA"},
+]
+				      }            
+				      ]
+				      ,
+				      legend:{
+				        cursor:"pointer",
+				        itemclick: function(e) {
+				          if (typeof (e.dataSeries.visible) ===  "undefined" || e.dataSeries.visible) {
+					          e.dataSeries.visible = false;
+				          }
+				          else
+				          {
+				            e.dataSeries.visible = true;
+				          }
+				          chart2.render();
+				        }
+				      }
+				    });
+
+				    chart2.render();
+			}
+
+			function quality(){
+				var chart3 = new CanvasJS.Chart("qualityScore",
+					{
+						animationEnabled: true,
+						title:{
+							text: "Simple Column Chart"
+						},
+						data: [
+						{
+							type: "column", //change type to bar, line, area, pie, etc
+							dataPoints: []
+						}
+						]
+					});
+
+					chart3.render();
+
+
+			}
+
+
+
+			function loadAll() {
+				preprocessingPlot();
+				dismissedInfo();
+				distribution();
+				quality();
+			}
+
+			window.onload = loadAll;
+		</script>
