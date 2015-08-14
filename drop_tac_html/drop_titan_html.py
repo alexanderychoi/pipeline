@@ -382,6 +382,10 @@ else:
 			<h1 class="text-primary">Reads per cell distribution</h1>
 			<br>
 			<div id="readsDistribution" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Quality scores histogram</h1>
+			<br>
+			<div id="qualityScore" style="height: 300px; width: 50%;"></div>
 			
 
 
@@ -514,7 +518,32 @@ else:
 				    chart2.render();
 			}
 
+			function quality(){
+				var chart3 = new CanvasJS.Chart("qualityScore",
+					{
+						animationEnabled: true,
+						title:{
+							text: "Simple Column Chart"
+						},
+						data: [
+						{
+							type: "column", //change type to bar, line, area, pie, etc
+							dataPoints: [''')
+	for key in dict_quality_scores:
+		html_file.write('{  x: ')
+		html_file.write(str(key))
+		html_file.write(', y: ')
+		html_file.write(str(dict_quality_scores[key]))
+		html_file.write('"},\n')
+	html_file.write(''']
+						}
+						]
+					});
 
+					chart3.render();
+
+
+			}
 
 
 
@@ -522,6 +551,7 @@ else:
 				preprocessingPlot();
 				dismissedInfo();
 				distribution();
+				quality();
 			}
 
 			window.onload = loadAll;
