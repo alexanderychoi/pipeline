@@ -272,10 +272,15 @@ else:
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
+			dict_quality_scores=defaultdict(int)
 			if gene != '*':
 				bowtie_al+=1
 				if barcode in dict_barcode_occurences:
 					AS_score = int(columns[11][5:])
+					if AS_score not in dict_quality_scores:
+						dict_quality_scores[AS_score]=1
+					else:
+						dict_quality_scores[AS_score]+=1
 					if barcode not in dict_quality:
 							dict_quality[barcode]['low']=0
 							dict_quality[barcode]['high']=0
