@@ -258,6 +258,7 @@ else:
 	sam_star=0
 	bowtie_al=0
 	dict_quality=defaultdict(dict)
+	dict_quality_scores=defaultdict(int)
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -272,7 +273,6 @@ else:
 			barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
-			dict_quality_scores=defaultdict(int)
 			if gene != '*':
 				bowtie_al+=1
 				if barcode in dict_barcode_occurences:
@@ -529,7 +529,7 @@ else:
 					{
 						animationEnabled: true,
 						title:{
-							text: "Simple Column Chart"
+							text: ""
 						},
 						data: [
 						{
@@ -537,22 +537,17 @@ else:
 							dataPoints: [''')
 	for key in dict_quality_scores.keys():
 		html_file.write('{  x: ')
-		html_file.write(str(key))
+		html_file.write(key)
 		html_file.write(', y: ')
 		html_file.write(str(dict_quality_scores[key]))
-		html_file.write('"},\n')
+		html_file.write('},\n')
 	html_file.write(''']
 						}
 						]
 					});
 
 					chart3.render();
-
-
 			}
-
-
-
 			function loadAll() {
 				preprocessingPlot();
 				dismissedInfo();
@@ -562,7 +557,7 @@ else:
 
 			window.onload = loadAll;
 		</script>''')
-
+	html_file.close()
 
 
 print "Ready for PCA..."
