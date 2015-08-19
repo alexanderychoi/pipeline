@@ -538,9 +538,9 @@ else:
 	for key in dict_quality_scores.keys():
 		html_file.write('{  x: ')
 		html_file.write(key)
-		html_file.write(', y: ')
+		html_file.write(', y: Math.log10(')
 		html_file.write(str(dict_quality_scores[key]))
-		html_file.write('},\n')
+		html_file.write(')},\n')
 	html_file.write(''']
 						}
 						]
