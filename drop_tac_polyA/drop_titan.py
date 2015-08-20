@@ -97,6 +97,7 @@ for f1, f2 in grouped(fastq_files, 2):
 			index_a =  [m.start() for m in re.finditer('(?='+error_str_a+')', f2_line2)]
 			if index_a:
 				f2_line2=f2_line2[:index_a[0]+1]
+				f2_line4=f2_line4[:index_a[0]+1]
 			if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
 				if tso not in f2_line2:
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
