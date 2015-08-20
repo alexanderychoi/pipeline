@@ -95,17 +95,27 @@ for f1, f2 in grouped(fastq_files, 2):
 			else:
 				total_reads+=1
 			index_a =  [m.start() for m in re.finditer('(?='+error_str_a+')', f2_line2)]
-			if index_a:
-				f2_line2=f2_line2[:index_a[0]+1]
-				f2_line4=f2_line4[:index_a[0]+1]
-			if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
-				if tso not in f2_line2:
-					barcode = f1_line2[tac_length:tac_length+barcode_length]
-					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
-					#seq_and_umi = f2_line2+umi
-					#Checking trimmed sequence length
-					if f2_line2 in seq_dictionary:
-						if umi not in seq_dictionary[f2_line2]:
+			if not index_a:
+				index_a[0]=len(f2_line2)
+			if index_a[0]!=0:
+				f2_line2=f2_line2[:index_a[0]-1]+'\n'
+				f2_line4=f2_line4[:index_a[0]-1]+'\n'
+				if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
+					if tso not in f2_line2:
+						barcode = f1_line2[tac_length:tac_length+barcode_length]
+						umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
+						#seq_and_umi = f2_line2+umi
+						#Checking trimmed sequence length
+						if f2_line2 in seq_dictionary:
+							if umi not in seq_dictionary[f2_line2]:
+								seq_dictionary[f2_line2].append(umi)
+								file_barcode.write(barcode+'\n')
+								#file_umi.write(umi+'\n')
+								file_noTA.write(f1_line1)
+								file_noTA.write(f2_line2)
+								file_noTA.write(f1_line3)
+								file_noTA.write(f2_line4)
+						else:
 							seq_dictionary[f2_line2].append(umi)
 							file_barcode.write(barcode+'\n')
 							#file_umi.write(umi+'\n')
@@ -113,15 +123,6 @@ for f1, f2 in grouped(fastq_files, 2):
 							file_noTA.write(f2_line2)
 							file_noTA.write(f1_line3)
 							file_noTA.write(f2_line4)
-					else:
-						seq_dictionary[f2_line2].append(umi)
-						file_barcode.write(barcode+'\n')
-						#file_umi.write(umi+'\n')
-						file_noTA.write(f1_line1)
-						file_noTA.write(f2_line2)
-						file_noTA.write(f1_line3)
-						file_noTA.write(f2_line4)
-
 					#if seq_and_umi in seq_and_umi_dictionary:
 						#seq_and_umi_dictionary[seq_and_umi]+=1
 					#else:
