@@ -98,7 +98,7 @@ for f1, f2 in grouped(fastq_files, 2):
 				if tso not in f2_line2:
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
 					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
-					seq_and_umi = f2_line2+umi
+					#seq_and_umi = f2_line2+umi
 					#Checking trimmed sequence length
 					if f2_line2 in seq_dictionary:
 						if umi not in seq_dictionary[f2_line2]:
