@@ -96,8 +96,8 @@ for f1, f2 in grouped(fastq_files, 2):
 				total_reads+=1
 			index_a =  [m.start() for m in re.finditer('(?='+error_str_a+')', f2_line2)]
 			if not index_a:
-				index_a[0]=len(f2_line2)
-			if index_a[0]!=0:
+				index_a.append(len(f2_line2))
+			if index_a[0]>=20:
 				f2_line2=f2_line2[:index_a[0]-1]+'\n'
 				f2_line4=f2_line4[:index_a[0]-1]+'\n'
 				if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
