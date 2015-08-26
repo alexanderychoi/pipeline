@@ -94,6 +94,7 @@ for f1, f2 in grouped(fastq_files, 2):
 				break
 			else:
 				total_reads+=1
+			index_a=[]
 			index_a =  [m.start() for m in re.finditer('(?='+error_str_a+')', f2_line2)]
 			if not index_a:
 				index_a.append(len(f2_line2))
