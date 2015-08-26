@@ -10,6 +10,9 @@
 ## Paul Rivaud
 ## paulrivaud.info@gmail.com
 ## Summer 2015
+## Maintained by:
+## Graham Heimberg
+## Graham.Heimberg@ucsf.edu
 #######################################
 
 from __future__ import division
@@ -65,24 +68,19 @@ for f1, f2 in grouped(fastq_files, 2):
 		#file2_fastq = open(fastq2_path+'.fastq','r')
 		file1_fastq = gzip.open(fastq1_path+'.fastq.gz','rb')
 		file2_fastq = gzip.open(fastq2_path+'.fastq.gz','rb')
-		#Dictionary containing (seq)-(umis list) pairs
-		seq_dictionary = defaultdict(list)
-		#seq_and_umi_dictionary = defaultdict(int)
 		print f1
 		print f2
 		print "\tReading files..."
 		print "\tWriting files..."
 		#file_noTA = open(fastq1_path+'_noTA.fastq', 'w+')
 		file_noTA = open(fastq1_path+'_noTA.fastq', 'w+', 1)
-		#file_umi = open(fastq1_path+'_umi.txt', 'w+',1)
+		file_umi = open(fastq1_path+'_umi.txt', 'w+',1)
 		file_barcode = open(fastq1_path+'_barcode.txt', 'w+', 1)
 		#Stats about the trimming process
 		total_reads = 0
-		#complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 		saved_reads = 0
 		dismissed_reads = 0
 		dis_tso = 0
-		dis_redund = 0
 		dis_no_tac = 0
 		while True:
 			f1_line1 = file1_fastq.readline()
@@ -90,10 +88,8 @@ for f1, f2 in grouped(fastq_files, 2):
 			f1_line3 = file1_fastq.readline()
 			f1_line4 = file1_fastq.readline()
 			f2_line1 = file2_fastq.readline()
-			#f2_line2 = "".join(complement.get(base, base) for base in reversed(file2_fastq.readline()))
 			f2_line2 = file2_fastq.readline()
 			f2_line3 = file2_fastq.readline()
-			#f2_line4 = "".join(reversed(file2_fastq.readline()))
 			f2_line4 = file2_fastq.readline()
 			if not f1_line1:
 				break
@@ -102,48 +98,21 @@ for f1, f2 in grouped(fastq_files, 2):
 			if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
 				if tso not in f2_line2:
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
-					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
-					#seq_and_umi = f2_line2+umi
-					#Checking trimmed sequence length
-					if f2_line2 in seq_dictionary:
-						if umi not in seq_dictionary[f2_line2]:
-							seq_dictionary[f2_line2].append(umi)
-							file_barcode.write(barcode+'\n')
-							#file_umi.write(umi+'\n')
-							file_noTA.write(f1_line1)
-							file_noTA.write(f2_line2)
-							file_noTA.write(f1_line3)
-							file_noTA.write(f2_line4)
-							saved_reads+=1
-						else:
-							dis_redund+=1
-							dismissed_reads+=1
-					else:
-						seq_dictionary[f2_line2].append(umi)
-						file_barcode.write(barcode+'\n')
-						#file_umi.write(umi+'\n')
-						file_noTA.write(f1_line1)
-						file_noTA.write(f2_line2)
-						file_noTA.write(f1_line3)
-						file_noTA.write(f2_line4)
-						saved_reads+=1
+					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length
+					file_umi.write(umi+'\n')
+					file_barcode.write(barcode+'\n')
+					file_noTA.write(f1_line1)
+					file_noTA.write(f2_line2)
+					file_noTA.write(f1_line3)
+					file_noTA.write(f2_line4)
+					saved_reads+=1
 				else:
 					dis_tso+=1
 					dismissed_reads+=1
 			else:
 				dis_no_tac+=1
 				dismissed_reads+=1
-					#if seq_and_umi in seq_and_umi_dictionary:
-						#seq_and_umi_dictionary[seq_and_umi]+=1
-					#else:
-						#seq_and_umi_dictionary[seq_and_umi]=1
 
-
-		#for key in seq_and_umi_dictionary:
-		#	file_umi.write(str(seq_and_umi_dictionary[key])+'\n')
-		#file_umi.close()
-		#seq_and_umi_dictionary=None
-		seq_dictionary=None
 		file_barcode.close()
 		file1_fastq.close()
 		file2_fastq.close()
@@ -233,6 +202,7 @@ else:
 	barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
 	print "Storing data in dictionaries..."
 
+	# Get the list of all genes from the genome fasta file
 	fasta_file = open(fasta_path,'r')
 	while True:
 		line = fasta_file.readline()
