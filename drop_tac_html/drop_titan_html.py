@@ -51,6 +51,9 @@ print "\n"
 
 nb_fastqs = len(fastq_files)
 curr_fastq = 2
+umi_list = []
+barcode_list = []
+barcode_count_dict = defaultdict(int)
 
 for f1, f2 in grouped(fastq_files, 2):
 	percent = int((curr_fastq/nb_fastqs)*100)
@@ -100,6 +103,9 @@ for f1, f2 in grouped(fastq_files, 2):
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
 					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length
 					file_umi.write(umi+'\n')
+					umi_list.append(umi)
+					barcode_list.append(barcode)
+					barcode_count_dict[barcode] += 1
 					file_barcode.write(barcode+'\n')
 					file_noTA.write(f1_line1)
 					file_noTA.write(f2_line2)
@@ -175,8 +181,8 @@ else:
 	sam_file = gzip.open(dir_path_alignment+file_noTA.split(os.extsep)[0]+'.sam.gz','rb')
 	#umi_file = open(fastq1_path+'_umi.txt','r')
 	list_f = os.listdir(dir_path_fastqs)
-	barcode_list = [f for f in list_f if '_barcode.txt' in f]
-	barcode_file = open(dir_path_fastqs+barcode_list[0],'r')
+	#barcode_list = [f for f in list_f if '_barcode.txt' in f]
+	#barcode_file = open(dir_path_fastqs+barcode_list[0],'r')
 	dict_genes_barcode = defaultdict(dict)
 	dict_gene_counter = defaultdict(int)
 	dict_gene_names = defaultdict(str)
@@ -193,15 +199,17 @@ else:
 				dict_barcode_occurences[barcode] = 1
 			else:
 				dict_barcode_occurences[barcode] += 1
-	print "Trimming barcode occurence dictionary..."
-	for barc in dict_barcode_occurences.keys():
-		if dict_barcode_occurences[barc] < occ_threshold:
-			del dict_barcode_occurences[barc]
-	print "Barcode occurence dictionary trimmed..."
+	#print "Trimming barcode occurence dictionary..."
+	#for barc in dict_barcode_occurences.keys():
+	#	if dict_barcode_occurences[barc] < occ_threshold:
+	#		del dict_barcode_occurences[barc]
+	#print "Barcode occurence dictionary trimmed..."
 	barcode_file.close()
-	barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
+	#barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
 	print "Storing data in dictionaries..."
 
+
+	###########################################################
 	# Get the list of all genes from the genome fasta file
 	fasta_file = open(fasta_path,'r')
 	while True:
@@ -223,12 +231,19 @@ else:
 				gene_nm=gene_nm.upper()
 				dict_gene_names[gene_nm] = gene_symbol
 	fasta_file.close()
+	###########################################################
+
 
 	sam_gene=0
 	sam_star=0
 	bowtie_al=0
 	dict_quality=defaultdict(dict)
 	dict_quality_scores=defaultdict(int)
+	sam_line_ind = 0
+
+	# map gene to tuple containing all umi and barcode pairs
+	gene_to_umi_bc_dict = defaultdict(lambda: set()))
+
 	while True:
 		line=sam_file.readline()
 		if not line:
@@ -236,31 +251,32 @@ else:
 		else:
 			columns = line.split("\t")
 			gene = columns[2]
-			gene=gene.replace('\n','')
-			gene=gene.replace(' ','')
+			gene = gene.replace('\n','')
+			gene = gene.replace(' ','')
 			gene = gene.upper()
-			barcode = barcode_file2.readline()
-			barcode = barcode.replace('\n','')
+			#barcode = barcode_file2.readline()
+			#barcode = barcode.replace('\n','')
 			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if gene != '*':
 				bowtie_al+=1
-				if barcode in dict_barcode_occurences:
+				umi = umi_list[sam_line_ind]
+				barcode = barcode_list[sam_line_ind]
+				#if barcode in dict_barcode_occurences:
+				umi_bc_pair = (umi, barcode)
+				if umi_bc_pair not in gene_to_umi_bc_dict[gene]:
+					gene_to_umi_bc_dict[gene].add(umi_bc_pair)
 					AS_score = int(columns[11][5:])
 					AS_score_str = str(AS_score)
-					if AS_score_str not in dict_quality_scores:
-						dict_quality_scores[AS_score_str]=1
-					else:
-						dict_quality_scores[AS_score_str]+=1
+					dict_quality_scores[AS_score_str]+=1
 					if barcode not in dict_quality:
 							dict_quality[barcode]['low']=0
 							dict_quality[barcode]['high']=0
 					if AS_score>=-3:
 						sam_gene+=1
 						dict_quality[barcode]['high']+=1
-						if barcode not in dict_barcode_counter:
-							dict_barcode_counter[barcode] = barcode_counter
-							barcode_counter+=1
+						dict_barcode_counter[barcode] +=1
+						barcode_counter+=1
 						if gene in dict_genes_barcode:
 							if barcode in dict_genes_barcode[gene].keys():
 								dict_genes_barcode[gene][barcode] +=1
@@ -270,9 +286,12 @@ else:
 							dict_genes_barcode[gene] = {barcode : 1}
 					else:
 						dict_quality[barcode]['low']+=1
-						sam_star+=1
+						sam_star += 1
 			else:
-				sam_star+=1
+				sam_star += 1
+		sam_line_ind += 1
+
+	# compute read count and alignment stats	
 	alignment_score=sam_gene/(sam_gene+sam_star)
 	alignment_score=round(alignment_score*100)
 	bowtie_score=bowtie_al/(bowtie_al+sam_star)
