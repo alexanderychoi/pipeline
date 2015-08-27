@@ -50,6 +50,10 @@ fasta_path = '../../reference_genomes/mm9/Transcriptome/transcripts.fa'
 ## Preprocessing var ##
 #######################
 
+#### String to search at beginning of R1:
+str_search='TAC'
+#str_search=''
+
 ####TAC length:
 tac_length = 3
 

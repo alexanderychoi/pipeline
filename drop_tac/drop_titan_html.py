@@ -1,5 +1,5 @@
 # -*-coding:Utf-8 -*
-
+## TITAN WILL LIVE FOR EVER IN OUR HEARTS
 #######################################
 ## drop.py is designed to preprocess
 ## the fastq files from a plate exper 
@@ -98,7 +98,7 @@ for f1, f2 in grouped(fastq_files, 2):
 				break
 			else:
 				total_reads+=1
-			if f1_line2[:3] == 'TAC' and f1_line2[:6] != 'TACGGG':
+			if (str_search in f1_line2[:3]) and f1_line2[:6] != 'TACGGG':
 				if tso not in f2_line2:
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
 					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length
@@ -187,7 +187,7 @@ else:
 	dict_gene_counter = defaultdict(int)
 	dict_gene_names = defaultdict(str)
 	dict_barcode_counter = defaultdict(int)
-	dict_barcode_occurences = defaultdict(str)
+	dict_barcode_occurences = defaultdict(int)
 	print "Creating barcode occurence dictionary..."
 	while True:
 		barcode = barcode_file.readline()
@@ -195,10 +195,7 @@ else:
 		if not barcode:
 			break
 		else:
-			if barcode not in dict_barcode_occurences:
-				dict_barcode_occurences[barcode] = 1
-			else:
-				dict_barcode_occurences[barcode] += 1
+			dict_barcode_occurences[barcode] += 1
 	#print "Trimming barcode occurence dictionary..."
 	#for barc in dict_barcode_occurences.keys():
 	#	if dict_barcode_occurences[barc] < occ_threshold:
