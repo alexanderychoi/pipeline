@@ -101,7 +101,7 @@ for f1, f2 in grouped(fastq_files, 2):
 			if (str_search in f1_line2[:3]) and f1_line2[:6] != 'TACGGG':
 				if tso not in f2_line2:
 					barcode = f1_line2[tac_length:tac_length+barcode_length]
-					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length
+					umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
 					file_umi.write(umi+'\n')
 					umi_list.append(umi)
 					barcode_list.append(barcode)
@@ -179,30 +179,13 @@ else:
 	gene_counter = 1
 	barcode_counter = 1
 	sam_file = gzip.open(dir_path_alignment+file_noTA.split(os.extsep)[0]+'.sam.gz','rb')
-	#umi_file = open(fastq1_path+'_umi.txt','r')
 	list_f = os.listdir(dir_path_fastqs)
-	#barcode_list = [f for f in list_f if '_barcode.txt' in f]
-	#barcode_file = open(dir_path_fastqs+barcode_list[0],'r')
 	dict_genes_barcode = defaultdict(dict)
 	dict_gene_counter = defaultdict(int)
 	dict_gene_names = defaultdict(str)
 	dict_barcode_counter = defaultdict(int)
 	dict_barcode_occurences = defaultdict(int)
-	print "Creating barcode occurence dictionary..."
-	while True:
-		barcode = barcode_file.readline()
-		barcode = barcode.replace('\n','')
-		if not barcode:
-			break
-		else:
-			dict_barcode_occurences[barcode] += 1
-	#print "Trimming barcode occurence dictionary..."
-	#for barc in dict_barcode_occurences.keys():
-	#	if dict_barcode_occurences[barc] < occ_threshold:
-	#		del dict_barcode_occurences[barc]
-	#print "Barcode occurence dictionary trimmed..."
-	barcode_file.close()
-	#barcode_file2 = open(dir_path_fastqs+barcode_list[0],'r')
+
 	print "Storing data in dictionaries..."
 
 
@@ -230,16 +213,18 @@ else:
 	fasta_file.close()
 	###########################################################
 
-
+	# collect alignment statistics
 	sam_gene=0
 	sam_star=0
 	bowtie_al=0
-	dict_quality=defaultdict(dict)
+	#dict_quality=defaultdict(dict)
+	dict_quality = defaultdict(lambda : defaultdict(int))
 	dict_quality_scores=defaultdict(int)
 	sam_line_ind = 0
+	dis_redund = 0
 
 	# map gene to tuple containing all umi and barcode pairs
-	gene_to_umi_bc_dict = defaultdict(lambda: set()))
+	gene_to_umi_bc_dict = defaultdict(lambda: set())
 
 	while True:
 		line=sam_file.readline()
@@ -251,9 +236,6 @@ else:
 			gene = gene.replace('\n','')
 			gene = gene.replace(' ','')
 			gene = gene.upper()
-			#barcode = barcode_file2.readline()
-			#barcode = barcode.replace('\n','')
-			#If read aligned, columns[2] is different from '*'
 			#print gene, barcode
 			if gene != '*':
 				bowtie_al+=1
@@ -266,9 +248,9 @@ else:
 					AS_score = int(columns[11][5:])
 					AS_score_str = str(AS_score)
 					dict_quality_scores[AS_score_str]+=1
-					if barcode not in dict_quality:
-							dict_quality[barcode]['low']=0
-							dict_quality[barcode]['high']=0
+#					if barcode not in dict_quality:
+#							dict_quality[barcode]['low']=0
+#							dict_quality[barcode]['high']=0
 					if AS_score>=-3:
 						sam_gene+=1
 						dict_quality[barcode]['high']+=1
@@ -284,6 +266,8 @@ else:
 					else:
 						dict_quality[barcode]['low']+=1
 						sam_star += 1
+				else:
+					dis_redund += 1
 			else:
 				sam_star += 1
 		sam_line_ind += 1
@@ -293,7 +277,6 @@ else:
 	alignment_score=round(alignment_score*100)
 	bowtie_score=bowtie_al/(bowtie_al+sam_star)
 	bowtie_score=round(bowtie_score*100)
-	barcode_file2.close()
 	sam_file.close()
 	print "Data stored in dictionaries........................................",percent,"%"
 	print "Creating genes-cells matrix...\n"
