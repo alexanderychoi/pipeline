@@ -18,7 +18,8 @@
 
 ####Path to .fastq files
 #dir_path_fastqs = '../../../RNAseq_files/DS2/fastqs/'
-dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
+dir_path_fastqs = '/home/graham/dropseq_pipe/targeted_test_files/fastqs/'
 #dir_path_fastqs = '../../data/DS2/fastqs/'
 #dir_path_fastqs = '../../data/drop_test/fastqs/'
 #dir_path_fastqs = '../../data/fastqs_titan/fastqs/'
@@ -26,7 +27,7 @@ dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
 
 ####Path to .sam files
 #dir_path_alignment = '../../../RNAseq_files/DS2/alignment/'
-dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
+dir_path_alignment = '/home/graham/dropseq_pipe/targeted_test_files/alignment/'
 #dir_path_alignment = '../data/DS2/alignment/'
 #dir_path_alignment = '../data/drop_test/alignment/'
 #dir_path_alignment = '../data/fastqs_titan/alignment/'
@@ -58,20 +59,23 @@ fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/tran
 str_search='TAC'
 #str_search=''
 
-####TAC length:
+#### TAC length:
 tac_length = 3
 
-####umi length:
+#### umi length:
 umi_length = 8
 
-####barcode length
+#### barcode length
 barcode_length = 10
 
 ####Tso sequence
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
-####Occurence threshold:
-occ_threshold = 5000
+#### Number of cells expected (same as # of clusters)
+cell_num = 5
+
+#### Occurence threshold:
+#occ_threshold = 5000
 
 #######################
 ##    Bowtie2 var    ##
