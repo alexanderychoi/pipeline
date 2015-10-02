@@ -27,7 +27,7 @@ import time
 import gzip
 import operator
 import glob
-import sklearn
+from sklearn.cluster import spectral_clustering
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy import cluster, spatial
@@ -256,7 +256,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		pruned_bc_dist_mat = pruned_bc_dist_mat[:, keep_dist_mat_inds]
 		pruned_top_bcs = [bc for i,bc in enumerate(top_bcs.keys()) if keep_dist_mat_inds[i]]
 
-
+		sklearn.s
 
 
 

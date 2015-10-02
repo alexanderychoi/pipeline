@@ -71,7 +71,7 @@ barcode_length = 10
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
 ####Occurence threshold:
-occ_threshold = 5000
+occ_threshold = 8
 
 #######################
 ##    Bowtie2 var    ##

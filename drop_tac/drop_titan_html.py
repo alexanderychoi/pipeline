@@ -282,9 +282,14 @@ else:
 	print "Creating genes-cells matrix...\n"
 	print gene_counter-1, "genes"
 	print barcode_counter-1, "cells"
-	matrix = [[0 for x in range(barcode_counter)] for x in range(gene_counter)]
-	for key_barcode in dict_barcode_counter:
-		col_num = dict_barcode_counter[key_barcode]
+
+	bc_passing_thresh_inds = [bc_occ>occ_threshold for bc_occ in dict_barcode_counter.values()]
+	bcs_passing_thresh = [bc for i,bc in enumerate(dict_barcode_counter.keys()) if bc_passing_thresh_inds[i]]
+	bc_2_ind_dict = {bc:(1+ind) for ind,bc in enumerate(bcs_passing_thresh)}
+
+	matrix = [[0 for x in range(len(bcs_passing_thresh)+1)] for x in range(gene_counter)]
+	for key_barcode in bcs_passing_thresh:
+		col_num = bc_2_ind_dict[key_barcode]
 		matrix[0][col_num] = key_barcode
 	for key_gene in dict_gene_names:
 		row_num = dict_gene_counter[dict_gene_names[key_gene]]
@@ -292,8 +297,9 @@ else:
 	for key_gene in dict_gene_names:
 		row_num = dict_gene_counter[dict_gene_names[key_gene]]
 		for key_barcode in dict_genes_barcode[key_gene]:
-			col_num = dict_barcode_counter[key_barcode]
-			matrix[row_num][col_num]+=dict_genes_barcode[key_gene][key_barcode]
+			if bc_2_ind_dict.get(key_barcode):
+				col_num = bc_2_ind_dict[key_barcode]
+				matrix[row_num][col_num]+=dict_genes_barcode[key_gene][key_barcode]
 	print "Genes-cells matrix created.........................................",percent,"%"
 	name=os.path.basename(os.path.normpath(sum_path))
 	matrix_file = open(sum_path+name+'_matrix.txt', 'w+')
