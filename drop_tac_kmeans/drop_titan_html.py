@@ -47,16 +47,18 @@ def compare(str1,str2):
 def str_dist(s1, s2):
 	# dynamic programming algorithm to compute the 
 	# edit distance (levenshtein distance) between two strings
-    previous_row = range(len(s2) + 1)
-    for i, c1 in enumerate(s1):
-        current_row = [i + 1]
-        for j, c2 in enumerate(s2):
-            insertions = previous_row[j + 1] + 1 # j+1 instead of j since previous_row and current_row are one character longer
-            deletions = current_row[j] + 1       # than s2
-            substitutions = previous_row[j] + (c1 != c2)
-            current_row.append(min(insertions, deletions, substitutions))
-        previous_row = current_row
-    return previous_row[-1]
+	if s1==s2:
+		return 0
+	previous_row = range(len(s2) + 1)
+	for i, c1 in enumerate(s1):
+		current_row = [i + 1]
+		for j, c2 in enumerate(s2):
+			insertions = previous_row[j + 1] + 1 # j+1 instead of j since previous_row and current_row are one character longer
+			deletions = current_row[j] + 1       # than s2
+			substitutions = previous_row[j] + (c1 != c2)
+			current_row.append(min(insertions, deletions, substitutions))
+		previous_row = current_row
+	return previous_row[-1]
 
 def compute_bc_dist_mat(bc_list):
 	# Compute a distance matrix using the levenshtein distance
@@ -119,10 +121,11 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 	file_pre_barcode = open(f1_base_name+'_pre_barcode.txt', 'w+', 1000)
 	#Stats about the trimming process
 	total_reads = 0
-	saved_reads = 0
+	preprocessing_saved_reads = 0
 	dismissed_reads = 0
 	dis_tso = 0
 	dis_no_tac = 0
+	tac_length = len(str_search)
 	while True:
 		f1_line1 = file1_fastq.readline()
 		f1_line2 = file1_fastq.readline()
@@ -136,7 +139,7 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 			break
 		else:
 			total_reads+=1
-		if (str_search in f1_line2[:3]) and f1_line2[:6] != (str_search + 'GGG'):
+		if (str_search in f1_line2[:tac_length]) and f1_line2[:(tac_length+3)] != (str_search + 'GGG'):
 			if tso not in f2_line2:
 				barcode = f1_line2[tac_length:tac_length+barcode_length]
 				umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
@@ -149,7 +152,7 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 				# write read (4 lines) to processed file 
 				file_processed.write(f1_line1 + f2_line2 + f1_line3 + f2_line4)
 
-				saved_reads+=1
+				preprocessing_saved_reads+=1
 			else:
 				dis_tso+=1
 				dismissed_reads+=1
@@ -162,7 +165,7 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 	file1_fastq.close()
 	file2_fastq.close()
 	file_processed.close()
-	return [umi_list, pre_barcode_list, barcode_count_dict, saved_reads, dismissed_reads, dis_tso, dis_no_tac, total_reads]
+	return [umi_list, pre_barcode_list, barcode_count_dict, preprocessing_saved_reads, dismissed_reads, dis_tso, dis_no_tac, total_reads]
 
 def align_reads(fastq_file):
 	start_time = time.time()
@@ -223,7 +226,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		umi_list = preprocess_results[0]
 		pre_barcode_list = preprocess_results[1]
 		barcode_count_dict = preprocess_results[2]
-		saved_reads = preprocess_results[3]
+		preprocessing_saved_reads = preprocess_results[3]
 		dismissed_reads = preprocess_results[4]
 		dis_tso = preprocess_results[5]
 		dis_no_tac = preprocess_results[6]
@@ -232,7 +235,7 @@ for f1, f2 in grouped(fastq_files, 2):
 
 
 		#################################################################
-		##### KMEANS ####################################################
+		##### BARCODE CORRECTION ########################################
 		#################################################################
 
 
@@ -241,17 +244,19 @@ for f1, f2 in grouped(fastq_files, 2):
 		print 'starting clustering'
 
 		# sort barcodes on occurances to cluster top 200
-		top_bc_num = 500;
+		top_bc_num = 1500;
 		sorted_bcs = sorted(barcode_count_dict.items(), key=operator.itemgetter(1))
 		top_bcs={}
 		for i in range(max(num_unique_pre_bcs-top_bc_num, 0), num_unique_pre_bcs):
 			top_bcs[sorted_bcs[i][0]] = sorted_bcs[i][1]
 
 		bc_dist_mat = compute_bc_dist_mat(top_bcs.keys())
-		keep_dist_mat_inds = np.sum(bc_dist_mat<2, axis=0)>1
+		keep_dist_mat_inds = np.sum(bc_dist_mat<3, axis=0)>(round(top_bc_num*.0035))
 		pruned_bc_dist_mat = bc_dist_mat[keep_dist_mat_inds , :]
 		pruned_bc_dist_mat = pruned_bc_dist_mat[:, keep_dist_mat_inds]
 		pruned_top_bcs = [bc for i,bc in enumerate(top_bcs.keys()) if keep_dist_mat_inds[i]]
+
+
 
 
 
@@ -304,7 +309,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		for bc in unique_pre_bcs:
 			bc_dist = measure_dist(bc, centroids)
 			min_ind = np.argmin(bc_dist)
-			if bc_dist[min_ind]<4:
+			if bc_dist[min_ind]<3:
 				pre_2_post_bc[bc] = centroids[min_ind]
 				recovered_bc += 1
 			else:
@@ -346,16 +351,14 @@ for f1, f2 in grouped(fastq_files, 2):
 		files_processed = [f for f in preprocessed_files if 'processed.fastq.gz' in f]
 		files_processed.sort()
 		bowtie_opt = ' '.join(bowtie2_options)
+
+		######################### align reads with bowtie2 ##########################
 		print "\n"
 		print "**********************************"
 		print "**      Starting alignment      **"
 		print "**********************************"
 		print "\n"
 
-		nb_processed = len(files_processed)
-		curr_processed = 1
-
-		######################### align reads with bowtie2 ##########################
 		sam_file_name = align_reads(f1_base_name+'_processed.fastq.gz')
 		
 
@@ -392,7 +395,6 @@ for f1, f2 in grouped(fastq_files, 2):
 			read_has_no_bc = 0
 
 
-
 			# map gene to tuple containing all umi and barcode pairs
 			gene_to_umi_bc_dict = defaultdict(lambda: set())
 
@@ -416,16 +418,16 @@ for f1, f2 in grouped(fastq_files, 2):
 								AS_score = int(columns[11][5:])
 								AS_score_str = str(AS_score)
 								dict_quality_scores[AS_score_str]+=1
-								if AS_score>=-3:
-									sam_gene+=1
-									gene_to_umi_bc_dict[gene].add(umi_bc_pair)
-									dict_quality[barcode]['high']+=1
-									dict_barcode_counter[barcode] +=1
-									barcode_counter+=1
-									dict_genes_barcode[gene][barcode] += 1
-								else:
-									dict_quality[barcode]['low']+=1
-									sam_star += 1
+								#if AS_score>=-3:
+								#	sam_gene+=1
+								gene_to_umi_bc_dict[gene].add(umi_bc_pair)
+								dict_quality[barcode]['high']+=1
+								dict_barcode_counter[barcode] +=1
+								barcode_counter+=1
+								dict_genes_barcode[gene][barcode] += 1
+								#else:
+								#	dict_quality[barcode]['low']+=1
+								#	sam_star += 1
 							else:
 								dis_redund += 1
 						else:
@@ -439,10 +441,10 @@ for f1, f2 in grouped(fastq_files, 2):
 			alignment_score=round(alignment_score*100)
 			bowtie_score=bowtie_al/(bowtie_al+sam_star)
 			bowtie_score=round(bowtie_score*100)
+			reads_counted = 0
 			sam_file.close()
 			print "Data stored in dictionaries........................................"
 			print "Creating genes-cells matrix...\n"
-			#print cell_num, "cells"			
 			print gene_counter-1, "genes"
 			print barcode_counter-1, "counted reads"
 
@@ -466,6 +468,7 @@ for f1, f2 in grouped(fastq_files, 2):
 				for key_barcode in dict_genes_barcode[key_gene]:
 					col_num = bc_2_column[key_barcode]
 					matrix[row_num][col_num]+=dict_genes_barcode[key_gene][key_barcode]
+					reads_counted += dict_genes_barcode[key_gene][key_barcode]
 			
 			print "Genes-cells matrix created........................................."
 			name=os.path.basename(os.path.normpath(sum_path))
@@ -520,7 +523,7 @@ for f1, f2 in grouped(fastq_files, 2):
 					<h1 class="text-primary">Reads used for gene expression quantification</h1>
 					<br>
 					<h1>''')
-			html_file.write(str(alignment_score))
+			html_file.write(str(100*round(reads_counted/total_reads,3)))
 			html_file.write('''%</h1>
 					<br>
 					<h1 class="text-primary">Reads per cell distribution</h1>
@@ -555,7 +558,7 @@ for f1, f2 in grouped(fastq_files, 2):
 			html_file.write(str(total_reads))
 			html_file.write('''  },
 								{ label: "Saved reads", y: ''')
-			html_file.write(str(saved_reads))
+			html_file.write(str(preprocessing_saved_reads))
 			html_file.write('''  },
 								{ label: "Dismissed reads", y: ''')
 			html_file.write(str(dismissed_reads))
