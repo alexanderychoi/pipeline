@@ -19,6 +19,7 @@ from __future__ import division
 from itertools import izip
 from collections import defaultdict
 from drop_titan_params import *
+from generate_html_report import *
 import re
 import math
 import os
@@ -27,11 +28,13 @@ import time
 import gzip
 import operator
 import glob
+import sklearn
 from sklearn.cluster import spectral_clustering
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy import cluster, spatial
+from scipy import cluster, spatial, sparse
 import scipy
+import sys
 
 def grouped(iterable, n):
     "s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."
@@ -193,6 +196,99 @@ def txt_file_to_list(filename):
 	inf_file.close()
 	return row_list
 
+def get_spectral_clusters(W, cluster_num):
+	labels = spectral_clustering(W, cluster_num)
+
+def read_sam(sam_file_name):
+	############################### Data gathering ###############################
+	print "\n"
+	print "**********************************"
+	print "**       Retrieving data        **"
+	print "**********************************"
+	print "\n"
+
+	if os.path.isfile(common_path+'matrix.txt'):
+		print "matrix.txt already exists.......................................... 100 %"
+	else:
+		barcode_counter = 1
+		sam_file = gzip.open(sam_file_name + '.gz', 'rb')
+		list_f = os.listdir(dir_path_fastqs)
+
+		dict_genes_barcode = defaultdict(lambda : defaultdict(int))
+		
+		dict_barcode_counter = defaultdict(int)
+		dict_barcode_occurences = defaultdict(int)
+
+		print "Storing data in dictionaries..."
+
+		# collect alignment statistics
+		sam_gene=0
+		sam_star=0
+		bowtie_al=0
+		dict_quality = defaultdict(lambda : defaultdict(int))
+		dict_quality_scores=defaultdict(int)
+		sam_line_ind = 0
+		dis_redund = 0
+		read_has_no_bc = 0
+
+
+		# map gene to tuple containing all umi and barcode pairs
+		gene_to_umi_bc_dict = defaultdict(lambda: set())
+
+		while True:
+			line=sam_file.readline()
+			if not line:
+				break
+			else:
+				columns = line.split("\t")
+				gene = columns[2]
+				gene = gene.strip()
+				gene = gene.upper()
+				if gene != '*':
+					bowtie_al+=1
+					umi = umi_list[sam_line_ind]
+					pre_barcode = post_barcode_list[sam_line_ind]
+					barcode = pre_2_post_bc[pre_barcode]
+					if barcode:
+						umi_bc_pair = (umi, barcode)
+						if umi_bc_pair not in gene_to_umi_bc_dict[gene]:
+							AS_score = int(columns[11][5:])
+							AS_score_str = str(AS_score)
+							dict_quality_scores[AS_score_str]+=1
+							#if AS_score>=-3:
+							sam_gene+=1
+							gene_to_umi_bc_dict[gene].add(umi_bc_pair)
+							dict_quality[barcode]['high']+=1
+							dict_barcode_counter[barcode] +=1
+							barcode_counter+=1
+							dict_genes_barcode[gene][barcode] += 1
+							#else:
+							#	dict_quality[barcode]['low']+=1
+							#	sam_star += 1
+						else:
+							dis_redund += 1
+					else:
+						read_has_no_bc +=1
+				else:
+					sam_star += 1
+			sam_line_ind += 1
+
+		# compute read count and alignment stats	
+		alignment_score=sam_gene/(sam_gene+sam_star)
+		alignment_score=round(alignment_score*100)
+		bowtie_score=bowtie_al/(bowtie_al+sam_star)
+		bowtie_score=round(bowtie_score*100)
+		sam_file.close()
+		print "Data stored in dictionaries........................................"
+		print "Creating genes-cells matrix...\n"
+		print gene_counter-1, "genes"
+		print barcode_counter-1, "counted reads"
+	return [gene_to_umi_bc_dict, dict_quality, dict_barcode_counter, 
+			dict_genes_barcode, dis_redund, read_has_no_bc, sam_star, 
+			bowtie_score, dict_quality_scores]	
+
+
+
 #Get a list of unprocessed fastq.gz files from the directory
 fastq_files = [filename for filename in glob.glob(dir_path_fastqs + '*.fastq.gz') if 'processed' not in filename]
 #Sorting the list alphabetically in order to get R1 and R2 pairs) 
@@ -209,6 +305,7 @@ curr_fastq = 2
 umi_list = []
 pre_barcode_list = []
 barcode_count_dict = defaultdict(int)
+common_path = os.path.commonprefix([dir_path_fastqs, dir_path_alignment])
 
 for f1, f2 in grouped(fastq_files, 2):
 	curr_fastq+=2
@@ -244,61 +341,24 @@ for f1, f2 in grouped(fastq_files, 2):
 		print 'starting clustering'
 
 		# sort barcodes on occurances to cluster top 200
-		top_bc_num = 1500;
+		top_bc_num = cell_num*10;
 		sorted_bcs = sorted(barcode_count_dict.items(), key=operator.itemgetter(1))
 		top_bcs={}
 		for i in range(max(num_unique_pre_bcs-top_bc_num, 0), num_unique_pre_bcs):
 			top_bcs[sorted_bcs[i][0]] = sorted_bcs[i][1]
 
 		bc_dist_mat = compute_bc_dist_mat(top_bcs.keys())
-		keep_dist_mat_inds = np.sum(bc_dist_mat<3, axis=0)>(round(top_bc_num*.0035))
-		pruned_bc_dist_mat = bc_dist_mat[keep_dist_mat_inds , :]
-		pruned_bc_dist_mat = pruned_bc_dist_mat[:, keep_dist_mat_inds]
-		pruned_top_bcs = [bc for i,bc in enumerate(top_bcs.keys()) if keep_dist_mat_inds[i]]
 
-		sklearn.s
-
-
-
-		### plot dendrogram and clustered barcodes ###
-		# fig = pylab.figure(figsize=(8,8))
-		# ax1 = fig.add_axes([0.09,0.1,0.2,0.6])
-		Y1 = scipy.cluster.hierarchy.linkage(scipy.spatial.distance.squareform(pruned_bc_dist_mat), method='average')
-		# Z1 = scipy.cluster.hierarchy.dendrogram(Y1, orientation='right')
-		# ax1.set_xticks([])
-		# ax1.set_yticks([])
-
-		# fig = pylab.figure(figsize=(8,8))
-		# ax2 = fig.add_axes([0.3,0.71,0.6,0.2])
-		# Y2 = scipy.cluster.hierarchy.linkage(scipy.spatial.distance.squareform(pruned_bc_dist_mat), method='average')
-		# Z2 = scipy.cluster.hierarchy.dendrogram(Y2)
-		# ax2.set_xticks([])
-		# ax2.set_yticks([])
-
-		# # Plot distance matrix.
-		# axmatrix = fig.add_axes([0.3,0.1,0.6,0.6])
-		# idx1 = Z1['leaves']
-		# idx2 = Z2['leaves']
-		# bc_dist_mat = pruned_bc_dist_mat[idx1,:]
-		# bc_dist_mat = pruned_bc_dist_mat[:,idx2]
-		# im = axmatrix.matshow(pruned_bc_dist_mat, aspect='auto', origin='lower', cmap=pylab.cm.YlGnBu)
-		# axmatrix.set_xticks([])
-		# axmatrix.set_yticks([])
-
-		# # Plot colorbar.
-		# axcolor = fig.add_axes([0.91,0.1,0.02,0.6])
-		# pylab.colorbar(im, cax=axcolor)
-		# fig.show()
-		#############################################
-		clusters = scipy.cluster.hierarchy.fcluster(Y1, 4, criterion='distance')
+		bc_linkage = scipy.cluster.hierarchy.linkage(bc_dist_mat, method='complete')
+		clusters = scipy.cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
 		num_clust = np.max(clusters)
 
 		# find the bc that has the lowest distance to all other bc's within a cluster
 		centroids = []
-		for i in range(1,num_clust):
-			cluster_dist_mat = pruned_bc_dist_mat[clusters==i,:]
+		for i in range(1,num_clust+1):
+			cluster_dist_mat = bc_dist_mat[clusters==i,:]
 			cluster_dist_mat = cluster_dist_mat[:,clusters==i]
-			cluster_bcs = [bc for j,bc in enumerate(pruned_top_bcs) if clusters[j]==i]
+			cluster_bcs = [bc for j,bc in enumerate(top_bcs) if clusters[j]==i]
 			centroids.append(cluster_bcs[np.argmin(np.sum(cluster_dist_mat, axis=0))])
 
 		# iterate over unique barcodes to populate correction dictionary
@@ -320,19 +380,23 @@ for f1, f2 in grouped(fastq_files, 2):
 		corrected_bcs_file=open(f1_base_name+'_barcode.txt', 'w+', 1)		
 		post_barcode_list = []
 		unrecovered = 0
+		corrected = 0
 		for pre_barcode in pre_barcode_list:
 			corrected_bc = pre_2_post_bc[pre_barcode]
 			corrected_bcs_file.write(corrected_bc+'\n')
 			post_barcode_list.append(corrected_bc)
+			if (pre_barcode != corrected_bc) and corrected_bc:
+				corrected +=1
 			if not corrected_bc:
 				unrecovered += 1
 		corrected_bcs_file.close()
 
-		print '\t', len(pre_barcode_list), 'total usable reads observed' 
-		print '\t', len(unique_pre_bcs), 'different barcodes'
-		print ''.join(['\t', str(int(round(100*recovered_bc/len(unique_pre_bcs)))), '% unique barcodes recovered'])
-		print ''.join(['\t', str(int(round(100*(len(pre_barcode_list) - unrecovered)/len(pre_barcode_list)))), '% total barcodes recovered'])
 		print '\t', total_reads, 'Total reads'
+		print '\t', len(pre_barcode_list), "reads have correct 'TAC' structure" 
+		print '\t', len(unique_pre_bcs), 'different barcodes are observed'
+		print ''.join(['\t-- ', str(int(round(100*recovered_bc/len(unique_pre_bcs)))), '% of which were recovered'])
+		print ''.join(['\t', str(corrected), ' in total, reads were rescued'])		
+		print ''.join(['\t', str(int(round(100*(len(pre_barcode_list) - unrecovered)/len(pre_barcode_list)))), '% of reads now have a usable barcode'])
 		print "..................................................................."
 		os.system("gzip "+f1_base_name+'_processed.fastq')
 		print "processed file compressed"
@@ -361,346 +425,50 @@ for f1, f2 in grouped(fastq_files, 2):
 
 		sam_file_name = align_reads(f1_base_name+'_processed.fastq.gz')
 		
+		read_sam_list = read_sam(sam_file_name)		
+		gene_to_umi_bc_dict =read_sam_list[0]
+		dict_quality = read_sam_list[1]
+		dict_barcode_counter = read_sam_list[2]
+		dict_genes_barcode = read_sam_list[3]
+		dis_redund = read_sam_list[4]
+		read_has_no_bc = read_sam_list[5]
+		sam_star = read_sam_list[6]
+		bowtie_score = read_sam_list[7]
+		dict_quality_scores = read_sam_list[8]
 
-		############################### Data gathering ###############################
-		print "\n"
-		print "**********************************"
-		print "**       Retrieving data        **"
-		print "**********************************"
-		print "\n"
+		reads_counted = 0
+		bc_2_column = {centroid:i+1 for (i, centroid) in enumerate(centroids)}
 
-		sum_path = os.path.commonprefix([dir_path_fastqs, dir_path_alignment])
-		if os.path.isfile(sum_path+'matrix.txt'):
-			print "matrix.txt already exists.......................................... 100 %"
-		else:
-			barcode_counter = 1
-			sam_file = gzip.open(sam_file_name + '.gz', 'rb')
-			list_f = os.listdir(dir_path_fastqs)
+		matrix = [[0 for x in range(len(centroids)+1)] for x in range(gene_counter+1)]
+		
+		# write barcode header for each column
+		for centroid in centroids:
+			col_num = bc_2_column[centroid]
+			matrix[0][col_num] = centroid
 
-			dict_genes_barcode = defaultdict(lambda : defaultdict(int))
-			
-			dict_barcode_counter = defaultdict(int)
-			dict_barcode_occurences = defaultdict(int)
+		# write the gene name header for each row
+		for key_gene in dict_gene_names:
+			row_num = dict_gene_counter[dict_gene_names[key_gene]]
+			matrix[row_num][0] = dict_gene_names[key_gene]
+		
+		# write read counts for each gene at each barcode
+		for key_gene in dict_gene_names:
+			row_num = dict_gene_counter[dict_gene_names[key_gene]]
+			for key_barcode in dict_genes_barcode[key_gene]:
+				col_num = bc_2_column[key_barcode]
+				matrix[row_num][col_num]+=dict_genes_barcode[key_gene][key_barcode]
+				reads_counted += dict_genes_barcode[key_gene][key_barcode]
+		
+		print "Genes-cells matrix created........................................."
+		name=os.path.basename(os.path.normpath(common_path))
+		matrix_file = open(common_path+name+'_matrix.txt', 'w+')
+		for item in matrix:
+				matrix_file.write('\t'.join([str(i) for i in item])+'\n')
+		matrix_file.close()
 
-			print "Storing data in dictionaries..."
-
-			# collect alignment statistics
-			sam_gene=0
-			sam_star=0
-			bowtie_al=0
-			dict_quality = defaultdict(lambda : defaultdict(int))
-			dict_quality_scores=defaultdict(int)
-			sam_line_ind = 0
-			dis_redund = 0
-			read_has_no_bc = 0
-
-
-			# map gene to tuple containing all umi and barcode pairs
-			gene_to_umi_bc_dict = defaultdict(lambda: set())
-
-			while True:
-				line=sam_file.readline()
-				if not line:
-					break
-				else:
-					columns = line.split("\t")
-					gene = columns[2]
-					gene = gene.strip()
-					gene = gene.upper()
-					if gene != '*':
-						bowtie_al+=1
-						umi = umi_list[sam_line_ind]
-						pre_barcode = post_barcode_list[sam_line_ind]
-						barcode = pre_2_post_bc[pre_barcode]
-						if barcode:
-							umi_bc_pair = (umi, barcode)
-							if umi_bc_pair not in gene_to_umi_bc_dict[gene]:
-								AS_score = int(columns[11][5:])
-								AS_score_str = str(AS_score)
-								dict_quality_scores[AS_score_str]+=1
-								#if AS_score>=-3:
-								#	sam_gene+=1
-								gene_to_umi_bc_dict[gene].add(umi_bc_pair)
-								dict_quality[barcode]['high']+=1
-								dict_barcode_counter[barcode] +=1
-								barcode_counter+=1
-								dict_genes_barcode[gene][barcode] += 1
-								#else:
-								#	dict_quality[barcode]['low']+=1
-								#	sam_star += 1
-							else:
-								dis_redund += 1
-						else:
-							read_has_no_bc +=1
-					else:
-						sam_star += 1
-				sam_line_ind += 1
-
-			# compute read count and alignment stats	
-			alignment_score=sam_gene/(sam_gene+sam_star)
-			alignment_score=round(alignment_score*100)
-			bowtie_score=bowtie_al/(bowtie_al+sam_star)
-			bowtie_score=round(bowtie_score*100)
-			reads_counted = 0
-			sam_file.close()
-			print "Data stored in dictionaries........................................"
-			print "Creating genes-cells matrix...\n"
-			print gene_counter-1, "genes"
-			print barcode_counter-1, "counted reads"
-
-			bc_2_column = {centroid:i+1 for (i, centroid) in enumerate(centroids)}
-
-			matrix = [[0 for x in range(len(centroids)+1)] for x in range(gene_counter+1)]
-			
-			# write barcode header for each column
-			for centroid in centroids:
-				col_num = bc_2_column[centroid]
-				matrix[0][col_num] = centroid
-
-			# write the gene name header for each row
-			for key_gene in dict_gene_names:
-				row_num = dict_gene_counter[dict_gene_names[key_gene]]
-				matrix[row_num][0] = dict_gene_names[key_gene]
-			
-			# write read counts for each gene at each barcode
-			for key_gene in dict_gene_names:
-				row_num = dict_gene_counter[dict_gene_names[key_gene]]
-				for key_barcode in dict_genes_barcode[key_gene]:
-					col_num = bc_2_column[key_barcode]
-					matrix[row_num][col_num]+=dict_genes_barcode[key_gene][key_barcode]
-					reads_counted += dict_genes_barcode[key_gene][key_barcode]
-			
-			print "Genes-cells matrix created........................................."
-			name=os.path.basename(os.path.normpath(sum_path))
-			matrix_file = open(sum_path+name+'_matrix.txt', 'w+')
-			for item in matrix:
-					matrix_file.write('\t'.join([str(i) for i in item])+'\n')
-			matrix_file.close()
-
-
-			html_file = open(sum_path+name+'_report.html', 'w+')
-			html_file.write('''<!DOCTYPE html>
-			<html>
-				<head>
-					<link rel="stylesheet" type="text/css" href="https://bootswatch.com/cerulean/bootstrap.min.css">
-				</head>
-				<body>
-					<nav class="navbar navbar-default">
-					  <div class="container-fluid">
-					    <div class="navbar-header">
-					      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-					        <span class="sr-only">Toggle navigation</span>
-					        <span class="icon-bar"></span>
-					        <span class="icon-bar"></span>
-					        <span class="icon-bar"></span>
-					      </button>
-					      <a class="navbar-brand" onclick="return false">HTML Report for ''')
-			html_file.write(name)
-			html_file.write('''</a>
-					    </div>
-					    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-					      	<ul class="nav navbar-nav navbar-right">
-				        		<li><a onclick="return false">Thomson Lab</a></li>
-				      		</ul>
-					    </div>
-					  </div>
-					</nav>
-					<br>
-					<h1 class="text-primary">Preprocessing results</h1>
-					<br>
-					<div id="preprocessing_bar" style="height: 300px; width: 50%;"></div>
-					<br>
-					<h1 class="text-primary">Dismissed reads information</h1>
-					<br>
-					<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
-					<br>
-					<h1 class="text-primary">Bowtie2 overall alignment rate</h1>
-					<br>
-					<h1>''')
-			html_file.write(str(bowtie_score))
-			html_file.write('''%</h1>
-					<br>
-					<h1 class="text-primary">Reads used for gene expression quantification</h1>
-					<br>
-					<h1>''')
-			html_file.write(str(100*round(reads_counted/total_reads,3)))
-			html_file.write('''%</h1>
-					<br>
-					<h1 class="text-primary">Reads per cell distribution</h1>
-					<br>
-					<div id="readsDistribution" style="height: 300px; width: 50%;"></div>
-					<br>
-					<h1 class="text-primary">Quality scores histogram</h1>
-					<br>
-					<div id="qualityScore" style="height: 300px; width: 50%;"></div>
-					
-
-
-					</body>
-				</html>
-
-
-				<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
-				<script type="text/javascript">
-					function preprocessingPlot() {
-						var chart = new CanvasJS.Chart("preprocessing_bar", {
-									theme: "theme2",//theme1
-									title:{
-										text: ""
-									},
-									animationEnabled: true,   // change to true
-									data: [              
-									{
-										// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
-										type: "column",
-										dataPoints: [
-											{ label: "Total reads",  y: ''')
-			html_file.write(str(total_reads))
-			html_file.write('''  },
-								{ label: "Saved reads", y: ''')
-			html_file.write(str(preprocessing_saved_reads))
-			html_file.write('''  },
-								{ label: "Dismissed reads", y: ''')
-			html_file.write(str(dismissed_reads))
-			html_file.write('''  }
-										]
-									}
-									]
-								});
-								chart.render();
-					}
-
-					function dismissedInfo(){
-						var chart1 = new CanvasJS.Chart("dismissed_info",
-									{
-										title:{
-											text: ""
-										},
-							                        animationEnabled: true,
-										theme: "theme2",
-										data: [
-										{        
-											type: "doughnut",
-											indexLabelFontFamily: "Garamond",       
-											indexLabelFontSize: 20,
-											startAngle:0,
-											indexLabelFontColor: "dimgrey",       
-											indexLabelLineColor: "darkgrey", 
-							
-
-											dataPoints: [
-											{  y: ''')
-			html_file.write(str(dis_tso))
-			html_file.write(''', label: "Contains TSO" },
-								{  y: ''')
-			html_file.write(str(dis_no_tac))
-			html_file.write(''', label: "No TAC" },
-								{  y: ''')
-			html_file.write(str(dis_redund))
-			html_file.write(''', label: "Redundant" }
-
-											]
-										}
-										]
-									});
-									chart1.render();
-					}
-
-					function distribution(){
-						var chart2 = new CanvasJS.Chart("readsDistribution",
-						    {
-						      title:{
-						      text: ""   
-						      },
-						      axisY:{
-						        title:"Number of reads"   
-						      },
-						      animationEnabled: true,
-						      data: [
-						      {        
-						        type: "stackedColumn",
-						        toolTipContent: "{label}<br/><span style='\\"'color: {color};'\\"'><strong>{name}</strong></span>: {y} reads",
-						        name: "Low quality",
-						        showInLegend: "true",
-						        dataPoints: [''')
-			for key in sorted(dict_quality.keys()):
-				html_file.write('{  y: ')
-				html_file.write(str(dict_quality[key]['low']))
-				html_file.write(', label:"')
-				html_file.write(key)
-				html_file.write('"},\n')
-			html_file.write(''']
-
-						      },  {        
-						        type: "stackedColumn",
-						        toolTipContent: "{label}<br/><span style='\\"'color: {color};'\\"'><strong>{name}</strong></span>: {y} reads",
-						        name: "Good quality",
-						        showInLegend: "true",
-						        dataPoints: [''')
-			for key in sorted(dict_quality.keys()):
-				html_file.write('{  y: ')
-				html_file.write(str(dict_quality[key]['high']))
-				html_file.write(', label:"')
-				html_file.write(key)
-				html_file.write('"},\n')
-			html_file.write(''']
-						      }            
-						      ]
-						      ,
-						      legend:{
-						        cursor:"pointer",
-						        itemclick: function(e) {
-						          if (typeof (e.dataSeries.visible) ===  "undefined" || e.dataSeries.visible) {
-							          e.dataSeries.visible = false;
-						          }
-						          else
-						          {
-						            e.dataSeries.visible = true;
-						          }
-						          chart2.render();
-						        }
-						      }
-						    });
-
-						    chart2.render();
-					}
-
-					function quality(){
-						var chart3 = new CanvasJS.Chart("qualityScore",
-							{
-								animationEnabled: true,
-								title:{
-									text: ""
-								},
-								data: [
-								{
-									type: "column", //change type to bar, line, area, pie, etc
-									dataPoints: [''')
-			for key in dict_quality_scores.keys():
-				html_file.write('{  x: ')
-				html_file.write(key)
-				html_file.write(', y: Math.log10(')
-				html_file.write(str(dict_quality_scores[key]))
-				html_file.write(')},\n')
-			html_file.write(''']
-								}
-								]
-							});
-
-							chart3.render();
-					}
-					function loadAll() {
-						preprocessingPlot();
-						dismissedInfo();
-						distribution();
-						quality();
-					}
-
-					window.onload = loadAll;
-				</script>''')
-			html_file.close()
-
-		print "HTML report completed"
+#### 	call get_html_report
+		generate_html_report(common_path, name, bowtie_score, reads_counted, total_reads, preprocessing_saved_reads, 
+						 dismissed_reads, dis_tso, dis_no_tac, dis_redund, dict_quality, dict_quality_scores)
 
 		print "\n"
 		print "**********************************"
