@@ -231,7 +231,6 @@ def read_sam(sam_file_name):
 		dis_redund = 0
 		read_has_no_bc = 0
 
-
 		# map gene to tuple containing all umi and barcode pairs
 		gene_to_umi_bc_dict = defaultdict(lambda: set())
 
@@ -460,7 +459,8 @@ for f1, f2 in grouped(fastq_files, 2):
 				reads_counted += dict_genes_barcode[key_gene][key_barcode]
 		
 		print "Genes-cells matrix created........................................."
-		name=os.path.basename(os.path.normpath(common_path))
+		#name=os.path.basename(os.path.normpath(common_path))
+		name = f1.split('/')[-1].split('.')[0]
 		matrix_file = open(common_path+name+'_matrix.txt', 'w+')
 		for item in matrix:
 				matrix_file.write('\t'.join([str(i) for i in item])+'\n')
