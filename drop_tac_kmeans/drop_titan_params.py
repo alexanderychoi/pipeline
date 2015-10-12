@@ -20,6 +20,7 @@
 #dir_path_fastqs = '../../../RNAseq_files/DS2/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/targeted_test_files/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_test_files/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/miseq_test/fastqs/'
 #dir_path_fastqs = '../../data/DS2/fastqs/'
 #dir_path_fastqs = '../../data/drop_test/fastqs/'
@@ -32,6 +33,7 @@ dir_path_fastqs = '/home/david/RNAseq_files/DS8/fastqs/'
 #dir_path_alignment = '../../../RNAseq_files/DS2/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/targeted_test_files/alignment/'
+#dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_test_files/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/miseq_test/alignment/'
 #dir_path_alignment = '../data/DS2/alignment/'
 #dir_path_alignment = '../data/drop_test/alignment/'
@@ -80,6 +82,12 @@ tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 #### Number of cells expected (same as # of clusters)
 cell_num = 20
 
+#### threshold for filtering consecutive A's
+A_num = 8
+
+#### Number of bases required for a read, throws out anything shorter
+min_read_len = 30
+
 #### Occurence threshold:
 #occ_threshold = 5000
 
@@ -93,3 +101,20 @@ processors = 8
 bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
 #very sensitive
 #bowtie2_options = ['-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
+
+############################################################################################
+#######################         !! DONT TOUCH !!        ####################################
+############################################################################################
+
+# compute length of tac for use as constant
+tac_length = len(str_search)
+
+# what length of seq is considered a TSO match?
+tso_word_len = 8
+
+
+
+
+############################################################################################
+############################################################################################
+############################################################################################
