@@ -36,16 +36,75 @@ from scipy import cluster, spatial, sparse
 import scipy
 import sys
 
+class fastq_read:
+	line1 = ''
+	line2 = ''
+	line3 = ''
+	line4 = ''
+	umi = ''
+	pre_barcode = ''
+	post_barcode = ''
+	tac_length = len(str_search)
+	def __init__(self, line1, line2, line3, line4, f1_line2):
+		self.line1 = line1
+		self.line2 = line2
+		self.line3 = line3
+		self.line4 = line4
+		self.umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
+		self.pre_barcode = f1_line2[tac_length:tac_length+barcode_length]
+	def clear_read(self):
+		self.line1 = ''
+		self.line2 = ''
+		self.line3 = ''
+		self.line4 = ''
+		self.umi = ''
+		self.pre_barcode = ''
+		self.post_barcode = ''		
+	def remove_polyA(self):
+		polyA_seq = 'A'*A_num 
+		if polyA_seq in self.line2:
+			A_start_ind = str.find(self.line2, polyA_seq)
+			self.line2 = self.line2[0:A_start_ind] + '\n'
+			self.line4 = self.line4[0:A_start_ind] + '\n'
+		self.check_length()			
+	def remove_tso(self):
+		tso_match = longest_common_substring(tso, self.line2)
+		tso_match_start = tso_match[0]
+		tso_match_len = tso_match[1]
+		if tso_match_len>tso_word_len:
+			print 'processing read'
+			self.line2 = self.line2[(tso_match_start+tso_match_len):]
+			self.line4 = self.line4[(tso_match_start+tso_match_len):]
+		self.check_length()
+	def check_length(self):
+		if len(self.line2)<min_read_len:
+			self.clear_read()
+	def write_read(self, outfile):
+		if self.line1:
+			outfile.write(self.line1 + self.line2 + self.line3 + self.line4)
+
+
+def longest_common_substring(s1, s2):
+	# used for finding large chunks of the TSO 
+	# oligo sequence within the read
+    m = [[0] * (1 + len(s2)) for i in xrange(1 + len(s1))]
+    longest, x_longest = 0, 0
+    for x in xrange(1, 1 + len(s1)):
+        for y in xrange(1, 1 + len(s2)):
+            if s1[x - 1] == s2[y - 1]:
+                m[x][y] = m[x - 1][y - 1] + 1
+                if m[x][y] > longest:
+                    longest = m[x][y]
+                    x_longest = x
+            else:
+                m[x][y] = 0
+    return x_longest, longest
+
+
 def grouped(iterable, n):
     "s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."
     return izip(*[iter(iterable)]*n)
 
-def compare(str1,str2):
-	diff = 0
-	for i in range(len(str1)):
-		if str1[i]!=str2[i]:
-			diff+=1
-	return diff
 
 def str_dist(s1, s2):
 	# dynamic programming algorithm to compute the 
@@ -129,7 +188,8 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 	dis_tso = 0
 	dis_no_tac = 0
 	tac_length = len(str_search)
-	while True:
+	f1_line1 = 1
+	while f1_line1:
 		f1_line1 = file1_fastq.readline()
 		f1_line2 = file1_fastq.readline()
 		f1_line3 = file1_fastq.readline()
@@ -138,24 +198,23 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 		f2_line2 = file2_fastq.readline()
 		f2_line3 = file2_fastq.readline()
 		f2_line4 = file2_fastq.readline()
-		if not f1_line1:
-			break
-		else:
-			total_reads+=1
+		total_reads+=1
 		if (str_search in f1_line2[:tac_length]) and f1_line2[:(tac_length+3)] != (str_search + 'GGG'):
 			if tso not in f2_line2:
-				barcode = f1_line2[tac_length:tac_length+barcode_length]
-				umi = f1_line2[tac_length+barcode_length:tac_length+barcode_length+umi_length]
-				file_umi.write(umi+'\n')
-				umi_list.append(umi)
-				pre_barcode_list.append(barcode)					
-				barcode_count_dict[barcode] += 1
-				file_pre_barcode.write(barcode+'\n')
-
-				# write read (4 lines) to processed file 
-				file_processed.write(f1_line1 + f2_line2 + f1_line3 + f2_line4)
-
-				preprocessing_saved_reads+=1
+				curr_read = fastq_read(f2_line1, f2_line2, f2_line3, f2_line4, f1_line2)
+				curr_read.remove_polyA()
+				curr_read.remove_tso()
+				#remove_tso_seq(f2_line2, tso_words)
+				if curr_read.line1:
+					file_umi.write(curr_read.umi+'\n')
+					umi_list.append(curr_read.umi)
+					pre_barcode_list.append(curr_read.pre_barcode)					
+					barcode_count_dict[curr_read.pre_barcode] += 1
+					file_pre_barcode.write(curr_read.pre_barcode+'\n')				
+					curr_read.write_read(file_processed)
+					preprocessing_saved_reads+=1
+				else:
+					dismissed_reads+=1					
 			else:
 				dis_tso+=1
 				dismissed_reads+=1
@@ -391,7 +450,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		corrected_bcs_file.close()
 
 		print '\t', total_reads, 'Total reads'
-		print '\t', len(pre_barcode_list), "reads have correct 'TAC' structure" 
+		print '\t', len(pre_barcode_list), "reads are left after TAC-GGG, TSO and polyA filtering" 
 		print '\t', len(unique_pre_bcs), 'different barcodes are observed'
 		print ''.join(['\t-- ', str(int(round(100*recovered_bc/len(unique_pre_bcs)))), '% of which were recovered'])
 		print ''.join(['\t', str(corrected), ' in total, reads were rescued'])		
