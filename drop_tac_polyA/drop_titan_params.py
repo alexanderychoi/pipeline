@@ -17,18 +17,22 @@
 #######################################
 
 ####Path to .fastq files
-dir_path_fastqs = '../../../RNAseq_files/DS2/fastqs/'
+#dir_path_fastqs = '../../../RNAseq_files/DS2/fastqs/'
 #dir_path_fastqs = '../../data/DS2/fastqs/'
 #dir_path_fastqs = '../../data/drop_test/fastqs/'
 #dir_path_fastqs = '../../data/fastqs_titan/fastqs/'
 #dir_path_fastqs = '../../data/fastq_micro/fastqs/'
+#dir_path_fastqs = '../../../RNAseq_files/DS4-H/fastqs/'
+dir_path_fastqs = '/home/david/RNAseq_files/trachea/fastqs/'
 
 ####Path to .sam files
-dir_path_alignment = '../../../RNAseq_files/DS2/alignment/'
+#dir_path_alignment = '../../../RNAseq_files/DS2/alignment/'
 #dir_path_alignment = '../data/DS2/alignment/'
 #dir_path_alignment = '../data/drop_test/alignment/'
 #dir_path_alignment = '../data/fastqs_titan/alignment/'
 #dir_path_alignment = '../data/fastq_micro/alignment/'
+#dir_path_alignment = '../../../RNAseq_files/DS4-H/alignments/'
+dir_path_alignment = '/home/david/RNAseq_files/trachea/alignments/'
 
 ####Path to the reference genome files
 reference_genome = '../../reference_genomes/mm9/Transcriptome/transcriptome'
@@ -51,7 +55,7 @@ fasta_path = '../../reference_genomes/mm9/Transcriptome/transcripts.fa'
 #######################
 
 ####TAC length:
-tac_length = 3
+tac_length = 0
 
 ####umi length:
 umi_length = 8
