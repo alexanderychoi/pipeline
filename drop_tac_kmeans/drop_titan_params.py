@@ -83,12 +83,12 @@ tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 #### Number of cells expected (same as # of clusters)
 cell_num = 5
 
+
 #### threshold for filtering consecutive A's
 A_num = 8
 
 #### Number of bases required for a read, throws out anything shorter
 min_read_len = 30
-cell_num = 20
 
 #### Occurence threshold:
 #occ_threshold = 5000
