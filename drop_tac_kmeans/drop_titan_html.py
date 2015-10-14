@@ -28,12 +28,9 @@ import time
 import gzip
 import operator
 import glob
-import sklearn
-from sklearn.cluster import spectral_clustering
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy import cluster, spatial, sparse
-import scipy
+from scipy import cluster, io
 import sys
 
 class fastq_read:
@@ -72,17 +69,13 @@ class fastq_read:
 		tso_match_start = tso_match[0]
 		tso_match_len = tso_match[1]
 		if tso_match_len>tso_word_len:
-			print 'processing read'
-			self.line2 = self.line2[(tso_match_start+tso_match_len):]
-			self.line4 = self.line4[(tso_match_start+tso_match_len):]
-		self.check_length()
+			self.clear_read()
 	def check_length(self):
 		if len(self.line2)<min_read_len:
 			self.clear_read()
 	def write_read(self, outfile):
 		if self.line1:
 			outfile.write(self.line1 + self.line2 + self.line3 + self.line4)
-
 
 def longest_common_substring(s1, s2):
 	# used for finding large chunks of the TSO 
@@ -100,11 +93,9 @@ def longest_common_substring(s1, s2):
                 m[x][y] = 0
     return x_longest, longest
 
-
 def grouped(iterable, n):
     "s -> (s0,s1,s2,...sn-1), (sn,sn+1,sn+2,...s2n-1), (s2n,s2n+1,s2n+2,...s3n-1), ..."
     return izip(*[iter(iterable)]*n)
-
 
 def str_dist(s1, s2):
 	# dynamic programming algorithm to compute the 
@@ -156,20 +147,18 @@ def get_gene_names_from_fasta(fasta_path):
 			if line[:1] == '>':
 				gene_symbol=line.split(' ')[1]
 				gene_symbol=gene_symbol[5:]
-				gene_symbol=gene_symbol.strip()
-				gene_symbol=gene_symbol.upper()
+				gene_symbol=gene_symbol.strip().upper()
 				if gene_symbol not in dict_gene_counter:
 					dict_gene_counter[gene_symbol] = gene_counter
 					gene_counter+=1
 				gene_nm=line.split(' ')[0]
 				gene_nm=gene_nm[1:]
-				gene_nm=gene_nm.strip()
-				gene_nm=gene_nm.upper()
+				gene_nm=gene_nm.strip().upper()
 				dict_gene_names[gene_nm] = gene_symbol
 	fasta_file.close()
 	return [dict_gene_names, dict_gene_counter]
 
-def preprocess_fastq_file_pair(f1, f2, str_search):
+def preprocess_fastq_file_pair(f1, f2):
 	print "processing fastq file pairs"
 	print "Opening fastq files..."
 	file1_fastq = gzip.open(f1,'rb')
@@ -203,8 +192,7 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 			if tso not in f2_line2:
 				curr_read = fastq_read(f2_line1, f2_line2, f2_line3, f2_line4, f1_line2)
 				curr_read.remove_polyA()
-				curr_read.remove_tso()
-				#remove_tso_seq(f2_line2, tso_words)
+				#curr_read.remove_tso()
 				if curr_read.line1:
 					file_umi.write(curr_read.umi+'\n')
 					umi_list.append(curr_read.umi)
@@ -221,7 +209,6 @@ def preprocess_fastq_file_pair(f1, f2, str_search):
 		else:
 			dis_no_tac+=1
 			dismissed_reads+=1
-
 	file_pre_barcode.close()
 	file_umi.close()		
 	file1_fastq.close()
@@ -255,9 +242,6 @@ def txt_file_to_list(filename):
 	inf_file.close()
 	return row_list
 
-def get_spectral_clusters(W, cluster_num):
-	labels = spectral_clustering(W, cluster_num)
-
 def read_sam(sam_file_name):
 	############################### Data gathering ###############################
 	print "\n"
@@ -272,9 +256,7 @@ def read_sam(sam_file_name):
 		barcode_counter = 1
 		sam_file = gzip.open(sam_file_name + '.gz', 'rb')
 		list_f = os.listdir(dir_path_fastqs)
-
-		dict_genes_barcode = defaultdict(lambda : defaultdict(int))
-		
+		dict_genes_barcode = defaultdict(lambda : defaultdict(int))	
 		dict_barcode_counter = defaultdict(int)
 		dict_barcode_occurences = defaultdict(int)
 
@@ -345,7 +327,18 @@ def read_sam(sam_file_name):
 			dict_genes_barcode, dis_redund, read_has_no_bc, sam_star, 
 			bowtie_score, dict_quality_scores]	
 
-
+def write_to_mat_file(matrix_list, filename):
+	# save MATLAB variable with each barcode
+	centroid_barcodes = np.zeros(cell_num, dtype=object)
+	centroid_barcodes[:] = matrix[0][1:]
+	# save MATLAB variable with each gene name
+	gene_names = np.zeros(len(matrix)-1, dtype=object)
+	gene_names[:] = [matrix[i][0] for i in range(1,len(matrix))]
+	# save MATLAB variable with each 
+	read_counts = np.array(matrix, dtype=object)
+	read_counts = np.array(read_counts[1:, 1:], dtype=float)
+	io.savemat(filename, mdict={'centroid_barcodes':centroid_barcodes, 
+						'gene_names':gene_names, 'read_counts':read_counts})
 
 #Get a list of unprocessed fastq.gz files from the directory
 fastq_files = [filename for filename in glob.glob(dir_path_fastqs + '*.fastq.gz') if 'processed' not in filename]
@@ -365,6 +358,10 @@ pre_barcode_list = []
 barcode_count_dict = defaultdict(int)
 common_path = os.path.commonprefix([dir_path_fastqs, dir_path_alignment])
 
+# initialize variables for saving to .mat files
+matrix_list = []
+matrix_name_list = []
+
 for f1, f2 in grouped(fastq_files, 2):
 	curr_fastq+=2
 	f1_base_name = f1.split(os.extsep)[0]
@@ -377,7 +374,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		print "\tFiles already preprocessed. Loading in parameters ..."
 
 	else:
-		preprocess_results = preprocess_fastq_file_pair(f1, f2, str_search)
+		preprocess_results = preprocess_fastq_file_pair(f1, f2)
 		umi_list = preprocess_results[0]
 		pre_barcode_list = preprocess_results[1]
 		barcode_count_dict = preprocess_results[2]
@@ -387,12 +384,9 @@ for f1, f2 in grouped(fastq_files, 2):
 		dis_no_tac = preprocess_results[6]
 		total_reads = preprocess_results[7]
 
-
-
 		#################################################################
 		##### BARCODE CORRECTION ########################################
 		#################################################################
-
 
 		num_unique_pre_bcs = len(barcode_count_dict)
 	
@@ -407,8 +401,8 @@ for f1, f2 in grouped(fastq_files, 2):
 
 		bc_dist_mat = compute_bc_dist_mat(top_bcs.keys())
 
-		bc_linkage = scipy.cluster.hierarchy.linkage(bc_dist_mat, method='complete')
-		clusters = scipy.cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
+		bc_linkage = cluster.hierarchy.linkage(bc_dist_mat, method='complete')
+		clusters = cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
 		num_clust = np.max(clusters)
 
 		# find the bc that has the lowest distance to all other bc's within a cluster
@@ -529,8 +523,13 @@ for f1, f2 in grouped(fastq_files, 2):
 		generate_html_report(common_path, name, bowtie_score, reads_counted, total_reads, preprocessing_saved_reads, 
 						 dismissed_reads, dis_tso, dis_no_tac, dis_redund, dict_quality, dict_quality_scores)
 
-		print "\n"
-		print "**********************************"
-		print "**---------Pipeline end---------**"
-		print "**********************************"
-		print "\n"
+		# put read count matrices into list, to save in one matlab file
+		matrix_list.append(matrix)
+		matrix_name_list.append(name)
+
+		write_to_mat_file(matrix_list, common_path+name)
+print "\n"
+print "**********************************"
+print "**---------Pipeline end---------**"
+print "**********************************"
+print "\n"

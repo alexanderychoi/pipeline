@@ -223,14 +223,13 @@ else:
 	for key_gene in dict_gene_names:
 		row_num = dict_gene_counter[dict_gene_names[key_gene]]
 		for key_experiment in dict_genes_exp[key_gene]:
-			matrix[row_gene][key_experiment]+=dict_genes_exp[key_geneouai][key_experiment]
+			matrix[row_num][key_experiment]+=dict_genes_exp[key_gene][key_experiment]
 	print "Genes-cells matrix created.........................................",percent,"%"
 	matrix_file = open(sum_path+'matrix.txt', 'w+')
 	for item in matrix:
 		matrix_file.write('\t'.join([str(i) for i in item])+'\n')
 	matrix_file.close()
 	print "Done..."	
-print "Ready for PCA..."
 print "\n"
 print "**********************************"
 print "***********Pipeline end***********"
