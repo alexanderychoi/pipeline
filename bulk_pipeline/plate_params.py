@@ -18,23 +18,25 @@
 
 ####Path to .fastq files
 #dir_path_fastqs = '../../data/fastqs_lucas/fastqs/'
-dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/bulk_test/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/bulk_test/fastqs/'
+dir_path_fastqs = '/home/david/RNAseq_files/NeuralDiff_bulk/fastqs/'
 
-#dir_path_fastqs = '../data/test/fastqs/'
 ####Path to .sam files
 #dir_path_alignment = '../../data/fastqs_lucas/alignment/'
-dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/bulk_test/alignment/'
-
+#dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/bulk_test/alignment/'
 #dir_path_alignment = '../data/test/alignment/'
+dir_path_alignment = '/home/david/RNAseq_files/NeuralDiff_bulk/alignments/'
 
 ####Path to the reference genome files
 #reference_genome = '../reference_genomes/mm9/Transcriptome/transcriptome'
 #reference_genome = '../../reference_genomes/Rattus_norvegicus/UCSC/rn5/cds'
-reference_genome = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcriptome'
+#reference_genome = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcriptome'
+reference_genome = '/home/david/TITAN_pipeline/reference_genomes/mm9/Transcriptome/transcriptome'
 
 #### Path to the species fasta file
 #fasta_path = '../../reference_genomes/Rattus_norvegicus/UCSC/rn5/cds.fa'
-fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcripts.fa'
+#fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcripts.fa'
+fasta_path = '/home/david/TITAN_pipeline/reference_genomes/mm9/Transcriptome/transcripts.fa'
 
 #######################################
 ## 									 ##
