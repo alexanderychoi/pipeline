@@ -18,18 +18,18 @@
 
 ####Path to .fastq files
 #dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
-#dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_test_files/fastqs/'
+dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_test_files/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/targeted_test_files/fastqs/'
-dir_path_fastqs = '/home/graham/dropseq_pipe/DS8/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/DS8/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/miseq_test/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS4-H2/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS8/fastqs/'
 
 ####Path to .sam files
 #dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
-#dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_test_files/alignment/'
+dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_test_files/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/targeted_test_files/alignment/'
-dir_path_alignment = '/home/graham/dropseq_pipe/DS8/alignment/'
+#dir_path_alignment = '/home/graham/dropseq_pipe/DS8/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/miseq_test/alignment/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS4-H2/alignments/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS8/alignments/'

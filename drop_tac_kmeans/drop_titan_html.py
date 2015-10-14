@@ -30,7 +30,7 @@ import operator
 import glob
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy import cluster
+from scipy import cluster, io
 import sys
 
 class fastq_read:
@@ -327,19 +327,18 @@ def read_sam(sam_file_name):
 			dict_genes_barcode, dis_redund, read_has_no_bc, sam_star, 
 			bowtie_score, dict_quality_scores]	
 
-def write_to_mat_file(matrix_list, names):
+def write_to_mat_file(matrix_list, filename):
 	# save MATLAB variable with each barcode
 	centroid_barcodes = np.zeros(cell_num, dtype=object)
 	centroid_barcodes[:] = matrix[0][1:]
 	# save MATLAB variable with each gene name
 	gene_names = np.zeros(len(matrix)-1, dtype=object)
 	gene_names[:] = [matrix[i][0] for i in range(1,len(matrix))]
-	# save MATLAB variable with each filename
-
-
 	# save MATLAB variable with each 
-	#read_counts = 
-	#scipy.io.savemat('')
+	read_counts = np.array(matrix, dtype=object)
+	read_counts = np.array(read_counts[1:, 1:], dtype=float)
+	io.savemat(filename, mdict={'centroid_barcodes':centroid_barcodes, 
+						'gene_names':gene_names, 'read_counts':read_counts})
 
 #Get a list of unprocessed fastq.gz files from the directory
 fastq_files = [filename for filename in glob.glob(dir_path_fastqs + '*.fastq.gz') if 'processed' not in filename]
@@ -528,7 +527,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		matrix_list.append(matrix)
 		matrix_name_list.append(name)
 
-#write_to_mat_file(matrix_list)
+		write_to_mat_file(matrix_list, common_path+name)
 print "\n"
 print "**********************************"
 print "**---------Pipeline end---------**"
