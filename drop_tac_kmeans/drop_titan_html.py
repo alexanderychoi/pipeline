@@ -229,7 +229,7 @@ def align_reads(fastq_file):
 			" -S " + alignment_file_name)
 		print 
 		os.system("gzip " + alignment_file_name)
-		print fastq_file_name + "aligned and file compressed"
+		print fastq_file_name + " aligned and file compressed"
 		print "..................................................................."
 	total_time = time.time() - start_time
 	print "Reads alignment time:"
@@ -329,6 +329,8 @@ def read_sam(sam_file_name):
 
 def write_to_mat_file(matrix_list, filename):
 	# save MATLAB variable with each barcode
+	cell_num = len(matrix_list[0][1])-1
+	matrix = matrix_list[0]
 	centroid_barcodes = np.zeros(cell_num, dtype=object)
 	centroid_barcodes[:] = matrix[0][1:]
 	# save MATLAB variable with each gene name
@@ -353,16 +355,15 @@ print "\n"
 
 nb_fastqs = len(fastq_files)
 curr_fastq = 2
-umi_list = []
-pre_barcode_list = []
-barcode_count_dict = defaultdict(int)
 common_path = os.path.commonprefix([dir_path_fastqs, dir_path_alignment])
 
 # initialize variables for saving to .mat files
-matrix_list = []
-matrix_name_list = []
+
 
 for f1, f2 in grouped(fastq_files, 2):
+	umi_list = []
+	pre_barcode_list = []
+	barcode_count_dict = defaultdict(int)
 	curr_fastq+=2
 	f1_base_name = f1.split(os.extsep)[0]
 
@@ -403,6 +404,10 @@ for f1, f2 in grouped(fastq_files, 2):
 
 		bc_linkage = cluster.hierarchy.linkage(bc_dist_mat, method='complete')
 		clusters = cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
+		
+		#bc_linkage = cluster.hierarchy.linkage(bc_dist_mat, method='complete')
+		#clusters = cluster.hierarchy.fcluster(bc_linkage, 3, criterion='distance')
+
 		num_clust = np.max(clusters)
 
 		# find the bc that has the lowest distance to all other bc's within a cluster
@@ -421,7 +426,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		for bc in unique_pre_bcs:
 			bc_dist = measure_dist(bc, centroids)
 			min_ind = np.argmin(bc_dist)
-			if bc_dist[min_ind]<3:
+			if bc_dist[min_ind]<4:
 				pre_2_post_bc[bc] = centroids[min_ind]
 				recovered_bc += 1
 			else:
@@ -524,6 +529,8 @@ for f1, f2 in grouped(fastq_files, 2):
 						 dismissed_reads, dis_tso, dis_no_tac, dis_redund, dict_quality, dict_quality_scores)
 
 		# put read count matrices into list, to save in one matlab file
+		matrix_list = []
+		matrix_name_list = []
 		matrix_list.append(matrix)
 		matrix_name_list.append(name)
 
