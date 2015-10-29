@@ -150,14 +150,11 @@ def get_gene_names_from_fasta(fasta_path):
 	return [dict_gene_names, dict_gene_counter]
 
 def preprocess_fastq_file_pair(f1, f2):
-	print "processing fastq file pairs"
-	print "Opening fastq files..."
+	print "first pass filtering of fastq files:"
 	file1_fastq = gzip.open(f1,'rb')
 	file2_fastq = gzip.open(f2,'rb')
-	print f1
-	print f2
-	print "\tReading files..."
-	print "\tWriting files..."
+	print f1.split('/')[-1]
+	print f2.split('/')[-1]
 	file_processed = open(f1_base_name+'_processed.fastq', 'w+', 1000)
 	file_umi = open(f1_base_name+'_umi.txt', 'w+',1)
 	file_pre_barcode = open(f1_base_name+'_pre_barcode.txt', 'w+', 1000)
@@ -194,12 +191,15 @@ def preprocess_fastq_file_pair(f1, f2):
 					curr_read.write_read(file_processed)
 					preprocessing_saved_reads+=1
 				else:
+					# too short due to long stretch of polyA
 					dismissed_reads+=1
 					dis_tso+=1				
 			else:
+				# read has a TSO sequence in it
 				dis_tso+=1
 				dismissed_reads+=1
 		else:
+			# Doesn't pass TAC-GGG filtering
 			dis_no_tac+=1
 			dismissed_reads+=1
 	file_pre_barcode.close()
@@ -237,7 +237,6 @@ def txt_file_to_list(filename):
 
 def read_sam(sam_file_name):
 	############################### Data gathering ###############################
-	print "\n"
 	print "**********************************"
 	print "**       Retrieving data        **"
 	print "**********************************"
@@ -419,7 +418,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		for bc in unique_pre_bcs:
 			bc_dist = measure_dist(bc, centroids)
 			min_ind = np.argmin(bc_dist)
-			if bc_dist[min_ind]<3:
+			if bc_dist[min_ind]<4:
 				pre_2_post_bc[bc] = centroids[min_ind]
 				recovered_bc += 1
 			else:
@@ -449,7 +448,6 @@ for f1, f2 in grouped(fastq_files, 2):
 		print ''.join(['\t', str(int(round(100*(len(pre_barcode_list) - unrecovered)/len(pre_barcode_list)))), '% of reads now have a usable barcode'])
 		print "..................................................................."
 		os.system("gzip "+f1_base_name+'_processed.fastq')
-		print "processed file compressed"
 
 		# read fasta to get gene names
 		fasta_return_dicts = get_gene_names_from_fasta(fasta_path)
