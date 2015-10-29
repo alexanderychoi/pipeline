@@ -61,10 +61,10 @@ str_search='AC'
 #str_search=''
 
 #### umi length:
-umi_length = 10
+umi_length = 9
 
 #### barcode length
-barcode_length = 12
+barcode_length = 10
 
 ####Tso sequence
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'

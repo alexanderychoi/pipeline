@@ -16,6 +16,7 @@
 #######################################
 
 from __future__ import division
+from datetime import datetime
 from itertools import izip
 from collections import defaultdict
 from drop_titan_params import *
@@ -32,6 +33,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import cluster, io
 import sys
+import Levenshtein
 
 class fastq_read:
 	line1 = ''
@@ -100,18 +102,7 @@ def grouped(iterable, n):
 def str_dist(s1, s2):
 	# dynamic programming algorithm to compute the 
 	# edit distance (levenshtein distance) between two strings
-	if s1==s2:
-		return 0
-	previous_row = range(len(s2) + 1)
-	for i, c1 in enumerate(s1):
-		current_row = [i + 1]
-		for j, c2 in enumerate(s2):
-			insertions = previous_row[j + 1] + 1 # j+1 instead of j since previous_row and current_row are one character longer
-			deletions = current_row[j] + 1       # than s2
-			substitutions = previous_row[j] + (c1 != c2)
-			current_row.append(min(insertions, deletions, substitutions))
-		previous_row = current_row
-	return previous_row[-1]
+	return Levenshtein.distance(s1,s2)
 
 def compute_bc_dist_mat(bc_list):
 	# Compute a distance matrix using the levenshtein distance
@@ -178,6 +169,7 @@ def preprocess_fastq_file_pair(f1, f2):
 	dis_no_tac = 0
 	tac_length = len(str_search)
 	f1_line1 = 1
+	polyA_dismissed = 0
 	while f1_line1:
 		f1_line1 = file1_fastq.readline()
 		f1_line2 = file1_fastq.readline()
@@ -202,7 +194,8 @@ def preprocess_fastq_file_pair(f1, f2):
 					curr_read.write_read(file_processed)
 					preprocessing_saved_reads+=1
 				else:
-					dismissed_reads+=1					
+					dismissed_reads+=1
+					dis_tso+=1				
 			else:
 				dis_tso+=1
 				dismissed_reads+=1
@@ -365,7 +358,7 @@ for f1, f2 in grouped(fastq_files, 2):
 	pre_barcode_list = []
 	barcode_count_dict = defaultdict(int)
 	curr_fastq+=2
-	f1_base_name = f1.split(os.extsep)[0]
+	f1_base_name = '/'.join(f1.split('/')[:-1]) + '/' + f1.split(os.extsep)[0].split('/')[-1].split('_')[0]
 
 	if os.path.isfile(dir_path_fastqs+f1.split(os.extsep)[0]+'_processed.fastq.gz'):
 		print f1
@@ -426,7 +419,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		for bc in unique_pre_bcs:
 			bc_dist = measure_dist(bc, centroids)
 			min_ind = np.argmin(bc_dist)
-			if bc_dist[min_ind]<4:
+			if bc_dist[min_ind]<3:
 				pre_2_post_bc[bc] = centroids[min_ind]
 				recovered_bc += 1
 			else:

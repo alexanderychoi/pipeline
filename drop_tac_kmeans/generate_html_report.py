@@ -125,7 +125,7 @@ def generate_html_report(common_path, name, bowtie_score, reads_counted, total_r
 									dataPoints: [
 									{  y: ''')
 	html_file.write(str(dis_tso))
-	html_file.write(''', label: "Contains TSO" },
+	html_file.write(''', label: "Contains TSO/PolyA" },
 						{  y: ''')
 	html_file.write(str(dis_no_tac))
 	html_file.write(''', label: "No TAC" },
