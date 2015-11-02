@@ -278,14 +278,15 @@ else:
 	bowtie_score=bowtie_al/(bowtie_al+sam_star)
 	bowtie_score=round(bowtie_score*100)
 	sam_file.close()
-	print "Data stored in dictionaries........................................",percent,"%"
-	print "Creating genes-cells matrix...\n"
-	print gene_counter-1, "genes"
-	print barcode_counter-1, "cells"
 
 	bc_passing_thresh_inds = [bc_occ>occ_threshold for bc_occ in dict_barcode_counter.values()]
 	bcs_passing_thresh = [bc for i,bc in enumerate(dict_barcode_counter.keys()) if bc_passing_thresh_inds[i]]
 	bc_2_ind_dict = {bc:(1+ind) for ind,bc in enumerate(bcs_passing_thresh)}
+
+	print "Data stored in dictionaries........................................",percent,"%"
+	print "Creating genes-cells matrix...\n"
+	print gene_counter-1, "genes"
+	print len(bcs_passing_thresh), "cells"
 
 	matrix = [[0 for x in range(len(bcs_passing_thresh)+1)] for x in range(gene_counter)]
 	for key_barcode in bcs_passing_thresh:
