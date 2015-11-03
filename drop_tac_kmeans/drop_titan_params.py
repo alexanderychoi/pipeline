@@ -18,31 +18,34 @@
 
 ####Path to .fastq files
 #dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
-dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/DS9/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/miseq_test/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS4-H2/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS8/fastqs/'
 #dir_path_fastqs = '/home/david/TITAN_pipeline/pipeline_code/targeted_dropseq_test/fastqs/'
+dir_path_fastqs = '/home/iamcam/Documents/pipeline/sisi_dropseq_test/fastqs/'
 
 ####Path to .sam files
 #dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
-dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/alignment/'
+#dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/DS9/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/miseq_test/alignment/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS4-H2/alignments/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS8/alignments/'
 #dir_path_alignment = '/home/david/TITAN_pipeline/pipeline_code/targeted_dropseq_test/alignment/'
+dir_path_alignment = '/home/iamcam/Documents/pipeline/sisi_dropseq_test/alignment/'
 
 ####Path to the reference genome files
 #reference_genome = '~/reference_genomes/mm9/Transcriptome/transcriptome'
-reference_genome = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcriptome'
+#reference_genome = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcriptome'
 #reference_genome = '/home/david/TITAN_pipeline/reference_genomes/mm9/Transcriptome/transcriptome'
+reference_genome = '/home/iamcam/Documents/reference_genomes/mm9/Transcriptome/mouse_cds'
 
 #### Path to the species fasta file
-fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcripts.fa'
+#fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcripts.fa'
 #fasta_path = '/home/david/TITAN_pipeline/reference_genomes/mm9/Transcriptome/transcripts.fa'
-
+fasta_path = '/home/iamcam/Documents/reference_genomes/mm9/Transcriptome/mouse_transcripts.fa'
 
 #######################################
 ## 									 ##
@@ -69,7 +72,7 @@ barcode_length = 12
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
 #### Number of cells expected (same as # of clusters)
-cell_num = 6
+cell_num = 1
 
 
 #### threshold for filtering consecutive A's
