@@ -31,7 +31,7 @@ import operator
 import glob
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy import cluster, io
+from scipy import cluster, io, spatial
 import sys
 import Levenshtein
 
@@ -321,8 +321,7 @@ def read_sam(sam_file_name):
 
 def write_to_mat_file(matrix_list, filename):
 	# save MATLAB variable with each barcode
-	cell_num = len(matrix_list[0][1])-1
-	matrix = matrix_list[0]
+	cell_num = len(matrix[1])-1
 	centroid_barcodes = np.zeros(cell_num, dtype=object)
 	centroid_barcodes[:] = matrix[0][1:]
 	# save MATLAB variable with each gene name
@@ -386,7 +385,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		print 'starting clustering'
 
 		# sort barcodes on occurances to cluster top 200
-		top_bc_num = cell_num*10;
+		top_bc_num = cell_num*5;
 		sorted_bcs = sorted(barcode_count_dict.items(), key=operator.itemgetter(1))
 		top_bcs={}
 		for i in range(max(num_unique_pre_bcs-top_bc_num, 0), num_unique_pre_bcs):
@@ -394,11 +393,11 @@ for f1, f2 in grouped(fastq_files, 2):
 
 		bc_dist_mat = compute_bc_dist_mat(top_bcs.keys())
 
-		bc_linkage = cluster.hierarchy.linkage(bc_dist_mat, method='complete')
-		clusters = cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
+		#bc_linkage = cluster.hierarchy.linkage(spatial.distance.squareform(bc_dist_mat), method='complete')
+		#clusters = cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
 		
-		#bc_linkage = cluster.hierarchy.linkage(bc_dist_mat, method='complete')
-		#clusters = cluster.hierarchy.fcluster(bc_linkage, 3, criterion='distance')
+		bc_linkage = cluster.hierarchy.linkage(spatial.distance.squareform(bc_dist_mat), method='single', metric='cityblock')
+		clusters = cluster.hierarchy.fcluster(bc_linkage, 4, criterion='distance')
 
 		num_clust = np.max(clusters)
 
@@ -410,34 +409,28 @@ for f1, f2 in grouped(fastq_files, 2):
 			cluster_bcs = [bc for j,bc in enumerate(top_bcs) if clusters[j]==i]
 			centroids.append(cluster_bcs[np.argmin(np.sum(cluster_dist_mat, axis=0))])
 
-		# iterate over unique barcodes to populate correction dictionary
-		pre_2_post_bc = defaultdict(str)
-		unique_pre_bcs = set(pre_barcode_list)
-		recovered_bc = 0
-		unrecovered_bc_list = []
-		for bc in unique_pre_bcs:
-			bc_dist = measure_dist(bc, centroids)
-			min_ind = np.argmin(bc_dist)
-			if bc_dist[min_ind]<4:
-				pre_2_post_bc[bc] = centroids[min_ind]
-				recovered_bc += 1
-			else:
-				unrecovered_bc_list.append(bc)
-
 		# iterate over all the original barcodes and write all the corrected barcodes to a file
+		pre_2_post_bc = defaultdict(str)
+		recovered_bc = 0		
+		unique_pre_bcs = set(pre_barcode_list)
 		print "Assigning all barcodes to closest barcode"
 		corrected_bcs_file=open(f1_base_name+'_barcode.txt', 'w+', 1)		
 		post_barcode_list = []
 		unrecovered = 0
 		corrected = 0
 		for pre_barcode in pre_barcode_list:
-			corrected_bc = pre_2_post_bc[pre_barcode]
-			corrected_bcs_file.write(corrected_bc+'\n')
-			post_barcode_list.append(corrected_bc)
-			if (pre_barcode != corrected_bc) and corrected_bc:
+			if not pre_2_post_bc[pre_barcode]:
+				bc_dist = measure_dist(pre_barcode, centroids)
+				min_ind = np.argmin(bc_dist)
+				if bc_dist[min_ind]<4:
+					pre_2_post_bc[pre_barcode] = centroids[min_ind]
+					recovered_bc += 1
+				else:
+					unrecovered += 1
+			if (pre_barcode != pre_2_post_bc[pre_barcode]) and pre_2_post_bc[pre_barcode]:
 				corrected +=1
-			if not corrected_bc:
-				unrecovered += 1
+			corrected_bcs_file.write(pre_2_post_bc[pre_barcode]+'\n')
+			post_barcode_list.append(pre_2_post_bc[pre_barcode])				
 		corrected_bcs_file.close()
 
 		print '\t', total_reads, 'Total reads'
@@ -485,12 +478,14 @@ for f1, f2 in grouped(fastq_files, 2):
 		dict_quality_scores = read_sam_list[8]
 
 		reads_counted = 0
-		bc_2_column = {centroid:i+1 for (i, centroid) in enumerate(centroids)}
 
+		sorted_bc_counter = sorted(dict_barcode_counter.items(), key=operator.itemgetter(1))
+		centroids_ordered = [item[0] for item in sorted_bc_counter][::-1]
+		bc_2_column = {centroid:i+1 for (i, centroid) in enumerate(centroids_ordered)}
 		matrix = [[0 for x in range(len(centroids)+1)] for x in range(gene_counter+1)]
 		
 		# write barcode header for each column
-		for centroid in centroids:
+		for centroid in centroids_ordered:
 			col_num = bc_2_column[centroid]
 			matrix[0][col_num] = centroid
 
@@ -520,12 +515,8 @@ for f1, f2 in grouped(fastq_files, 2):
 						 dismissed_reads, dis_tso, dis_no_tac, dis_redund, dict_quality, dict_quality_scores)
 
 		# put read count matrices into list, to save in one matlab file
-		matrix_list = []
-		matrix_name_list = []
-		matrix_list.append(matrix)
-		matrix_name_list.append(name)
 
-		write_to_mat_file(matrix_list, common_path+name)
+		write_to_mat_file(matrix, common_path+name)
 print "\n"
 print "**********************************"
 print "**---------Pipeline end---------**"

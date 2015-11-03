@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+	<html>
+		<head>
+			<link rel="stylesheet" type="text/css" href="https://bootswatch.com/cerulean/bootstrap.min.css">
+		</head>
+		<body>
+			<nav class="navbar navbar-default">
+			  <div class="container-fluid">
+			    <div class="navbar-header">
+			      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+			        <span class="sr-only">Toggle navigation</span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			      </button>
+			      <a class="navbar-brand" onclick="return false">HTML Report for test_R1</a>
+			    </div>
+			    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			      	<ul class="nav navbar-nav navbar-right">
+		        		<li><a onclick="return false">Thomson Lab</a></li>
+		      		</ul>
+			    </div>
+			  </div>
+			</nav>
+			<br>
+			<h1 class="text-primary">Preprocessing results</h1>
+			<br>
+			<div id="preprocessing_bar" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Dismissed reads information</h1>
+			<br>
+			<div id="dismissed_info" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Bowtie2 overall alignment rate</h1>
+			<br>
+			<h1>50.0%</h1>
+			<br>
+			<h1 class="text-primary">Reads used for gene expression quantification</h1>
+			<br>
+			<h1>48.5%</h1>
+			<br>
+			<h1 class="text-primary">Reads per cell distribution</h1>
+			<br>
+			<div id="readsDistribution" style="height: 300px; width: 50%;"></div>
+			<br>
+			<h1 class="text-primary">Quality scores histogram</h1>
+			<br>
+			<div id="qualityScore" style="height: 300px; width: 50%;"></div>
+			
+
+
+			</body>
+		</html>
+
+
+		<script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+		<script type="text/javascript">
+			function preprocessingPlot() {
+				var chart = new CanvasJS.Chart("preprocessing_bar", {
+							theme: "theme2",//theme1
+							title:{
+								text: ""
+							},
+							animationEnabled: true,   // change to true
+							data: [              
+							{
+								// Change type to "bar", "splineArea", "area", "spline", "pie",etc.
+								type: "column",
+								dataPoints: [
+									{ label: "Total reads",  y: 120001  },
+						{ label: "Saved reads", y: 119041  },
+						{ label: "Dismissed reads", y: 960  }
+								]
+							}
+							]
+						});
+						chart.render();
+			}
+
+			function dismissedInfo(){
+				var chart1 = new CanvasJS.Chart("dismissed_info",
+							{
+								title:{
+									text: ""
+								},
+					                        animationEnabled: true,
+								theme: "theme2",
+								data: [
+								{        
+									type: "doughnut",
+									indexLabelFontFamily: "Garamond",       
+									indexLabelFontSize: 20,
+									startAngle:0,
+									indexLabelFontColor: "dimgrey",       
+									indexLabelLineColor: "darkgrey", 
+					
+
+									dataPoints: [
+									{  y: 16, label: "Contains TSO/PolyA" },
+						{  y: 944, label: "No TAC" },
+						{  y: 1755, label: "Redundant" }
+
+									]
+								}
+								]
+							});
+							chart1.render();
+			}
+
+			function distribution(){
+				var chart2 = new CanvasJS.Chart("readsDistribution",
+				    {
+				      title:{
+				      text: ""   
+				      },
+				      axisY:{
+				        title:"Number of reads"   
+				      },
+				      animationEnabled: true,
+				      data: [
+				      {        
+				        type: "stackedColumn",
+				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        name: "Low quality",
+				        showInLegend: "true",
+				        dataPoints: [{  y: 0, label:"GTGTTGATGCGG"},
+{  y: 0, label:"TAACTCACTTCT"},
+{  y: 0, label:"TGAAAGACGTTT"},
+]
+
+				      },  {        
+				        type: "stackedColumn",
+				        toolTipContent: "{label}<br/><span style='\"'color: {color};'\"'><strong>{name}</strong></span>: {y} reads",
+				        name: "Good quality",
+				        showInLegend: "true",
+				        dataPoints: [{  y: 28827, label:"GTGTTGATGCGG"},
+{  y: 14718, label:"TAACTCACTTCT"},
+{  y: 14700, label:"TGAAAGACGTTT"},
+]
+				      }            
+				      ]
+				      ,
+				      legend:{
+				        cursor:"pointer",
+				        itemclick: function(e) {
+				          if (typeof (e.dataSeries.visible) ===  "undefined" || e.dataSeries.visible) {
+					          e.dataSeries.visible = false;
+				          }
+				          else
+				          {
+				            e.dataSeries.visible = true;
+				          }
+				          chart2.render();
+				        }
+				      }
+				    });
+
+				    chart2.render();
+			}
+
+			function quality(){
+				var chart3 = new CanvasJS.Chart("qualityScore",
+					{
+						animationEnabled: true,
+						title:{
+							text: ""
+						},
+						data: [
+						{
+							type: "column", //change type to bar, line, area, pie, etc
+							dataPoints: [{  x: 0, y: Math.log10(58245)},
+]
+						}
+						]
+					});
+
+					chart3.render();
+			}
+			function loadAll() {
+				preprocessingPlot();
+				dismissedInfo();
+				distribution();
+				quality();
+			}
+
+			window.onload = loadAll;
+		</script>
