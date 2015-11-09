@@ -19,7 +19,9 @@
 ####Path to .fastq files
 #dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/fastqs/'
+#dir_path_fastqs = '/home/graham/Sequencing/N704/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/DS9/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/miseq_test/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS4-H2/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS8/fastqs/'
@@ -28,9 +30,11 @@ dir_path_fastqs = '/home/iamcam/Documents/pipeline/sisi_dropseq_test/fastqs/'
 
 ####Path to .sam files
 #dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
+#dir_path_alignment = '/home/graham/Sequencing/N704/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/DS9/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/miseq_test/alignment/'
+#dir_path_alignment = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/alignment/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS4-H2/alignments/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS8/alignments/'
 #dir_path_alignment = '/home/david/TITAN_pipeline/pipeline_code/targeted_dropseq_test/alignment/'
@@ -39,11 +43,15 @@ dir_path_alignment = '/home/iamcam/Documents/pipeline/sisi_dropseq_test/alignmen
 ####Path to the reference genome files
 #reference_genome = '~/reference_genomes/mm9/Transcriptome/transcriptome'
 #reference_genome = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcriptome'
+#reference_genome = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcriptome'
+#reference_genome = '/home/graham/dropseq_pipe/reference_genomes/UCSC_hg19_mRNA/genome_index/mRNA'
 #reference_genome = '/home/david/TITAN_pipeline/reference_genomes/mm9/Transcriptome/transcriptome'
 reference_genome = '/home/iamcam/Documents/reference_genomes/mm9/Transcriptome/mouse_cds'
 
 #### Path to the species fasta file
 #fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcripts.fa'
+#fasta_path = '/home/graham/dropseq_pipe/reference_genomes/mm9/Transcriptome/transcripts.fa'
+#fasta_path = '/home/graham/dropseq_pipe/reference_genomes/UCSC_hg19_mRNA/seed_files/mRNA.fa'
 #fasta_path = '/home/david/TITAN_pipeline/reference_genomes/mm9/Transcriptome/transcripts.fa'
 fasta_path = '/home/iamcam/Documents/reference_genomes/mm9/Transcriptome/mouse_transcripts.fa'
 
@@ -59,8 +67,8 @@ fasta_path = '/home/iamcam/Documents/reference_genomes/mm9/Transcriptome/mouse_t
 #######################
 
 #### String to search at beginning of R1:
-str_search='TAC'
-#str_search=''
+#str_search='TAC'
+str_search=''
 
 #### umi length:
 umi_length = 8
@@ -72,7 +80,11 @@ barcode_length = 12
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
 #### Number of cells expected (same as # of clusters)
+<<<<<<< HEAD
 cell_num = 1
+=======
+cell_num = 250
+>>>>>>> 7511d51b87f5dca0a653268ffd5ade556f7c45d3
 
 
 #### threshold for filtering consecutive A's
@@ -91,9 +103,9 @@ bowtie2_dir=''
 #Server processors
 processors = 8
 #Less sensitive 
-bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
+#bowtie2_options = ['-D', '10', '-R', '1', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
 #very sensitive
-#bowtie2_options = ['-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
+bowtie2_options = ['-D', '20', '-R', '3', '-N', '0', '-L', '20','-i', 'S,1,0.50', '-p', str(processors), '--reorder', '--no-hd', '--met', '20']
 
 
 

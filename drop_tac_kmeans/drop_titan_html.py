@@ -396,7 +396,7 @@ for f1, f2 in grouped(fastq_files, 2):
 		#bc_linkage = cluster.hierarchy.linkage(spatial.distance.squareform(bc_dist_mat), method='complete')
 		#clusters = cluster.hierarchy.fcluster(bc_linkage, cell_num, criterion='maxclust')
 		
-		bc_linkage = cluster.hierarchy.linkage(spatial.distance.squareform(bc_dist_mat), method='single', metric='cityblock')
+		bc_linkage = cluster.hierarchy.linkage(spatial.distance.squareform(bc_dist_mat), method='average', metric='cityblock')
 		clusters = cluster.hierarchy.fcluster(bc_linkage, 4, criterion='distance')
 
 		num_clust = np.max(clusters)
@@ -411,9 +411,10 @@ for f1, f2 in grouped(fastq_files, 2):
 
 		# iterate over all the original barcodes and write all the corrected barcodes to a file
 		pre_2_post_bc = defaultdict(str)
+		post_barcode_counter = defaultdict(int)
 		recovered_bc = 0		
 		unique_pre_bcs = set(pre_barcode_list)
-		print "Assigning all barcodes to closest barcode"
+		print "Assigning all barcodes to closest centroid"
 		corrected_bcs_file=open(f1_base_name+'_barcode.txt', 'w+', 1)		
 		post_barcode_list = []
 		unrecovered = 0
@@ -430,7 +431,7 @@ for f1, f2 in grouped(fastq_files, 2):
 			if (pre_barcode != pre_2_post_bc[pre_barcode]) and pre_2_post_bc[pre_barcode]:
 				corrected +=1
 			corrected_bcs_file.write(pre_2_post_bc[pre_barcode]+'\n')
-			post_barcode_list.append(pre_2_post_bc[pre_barcode])				
+			post_barcode_list.append(pre_2_post_bc[pre_barcode])
 		corrected_bcs_file.close()
 
 		print '\t', total_reads, 'Total reads'
@@ -466,7 +467,7 @@ for f1, f2 in grouped(fastq_files, 2):
 
 		sam_file_name = align_reads(f1_base_name+'_processed.fastq.gz')
 		
-		read_sam_list = read_sam(sam_file_name)		
+		read_sam_list = read_sam(sam_file_name)
 		gene_to_umi_bc_dict =read_sam_list[0]
 		dict_quality = read_sam_list[1]
 		dict_barcode_counter = read_sam_list[2]
