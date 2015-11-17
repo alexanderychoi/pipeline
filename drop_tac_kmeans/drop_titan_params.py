@@ -20,8 +20,8 @@
 #dir_path_fastqs = '/home/graham/dropseq_pipe/drop_test_files/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/fastqs/'
 #dir_path_fastqs = '/home/graham/Sequencing/N704/fastqs/'
-#dir_path_fastqs = '/home/graham/dropseq_pipe/DS9/fastqs/'
-dir_path_fastqs = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/fastqs/'
+dir_path_fastqs = '/home/graham/dropseq_pipe/DS9/fastqs/'
+#dir_path_fastqs = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/fastqs/'
 #dir_path_fastqs = '/home/graham/dropseq_pipe/miseq_test/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS4-H2/fastqs/'
 #dir_path_fastqs = '/home/david/RNAseq_files/DS8/fastqs/'
@@ -31,9 +31,9 @@ dir_path_fastqs = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/fastqs/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
 #dir_path_alignment = '/home/graham/Sequencing/N704/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/alignment/'
-#dir_path_alignment = '/home/graham/dropseq_pipe/DS9/alignment/'
+dir_path_alignment = '/home/graham/dropseq_pipe/DS9/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/miseq_test/alignment/'
-dir_path_alignment = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/alignment/'
+#dir_path_alignment = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/alignment/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS4-H2/alignments/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS8/alignments/'
 #dir_path_alignment = '/home/david/TITAN_pipeline/pipeline_code/targeted_dropseq_test/alignment/'
@@ -75,7 +75,7 @@ barcode_length = 12
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
 #### Number of cells expected (same as # of clusters)
-cell_num = 250
+cell_num = 50
 
 
 #### threshold for filtering consecutive A's
