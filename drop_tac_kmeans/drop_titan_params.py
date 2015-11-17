@@ -32,7 +32,7 @@ dir_path_fastqs = '/home/iamcam/Documents/pipeline/sisi_dropseq_test/fastqs/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/drop_test_files/alignment/'
 #dir_path_alignment = '/home/graham/Sequencing/N704/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/pipeline/targeted_dropseq_test/alignment/'
-#dir_path_alignment = '/home/graham/dropseq_pipe/DS9/alignment/'
+dir_path_alignment = '/home/graham/dropseq_pipe/DS9/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/miseq_test/alignment/'
 #dir_path_alignment = '/home/graham/dropseq_pipe/DS13/250_diff_NSC/alignment/'
 #dir_path_alignment = '/home/david/RNAseq_files/DS4-H2/alignments/'
@@ -80,12 +80,7 @@ barcode_length = 12
 tso = 'AAGCAGTGGTATCAACGCAGAGTAC'
 
 #### Number of cells expected (same as # of clusters)
-<<<<<<< HEAD
-cell_num = 1
-=======
-cell_num = 250
->>>>>>> 7511d51b87f5dca0a653268ffd5ade556f7c45d3
-
+cell_num = 50
 
 #### threshold for filtering consecutive A's
 A_num = 8
