@@ -171,7 +171,8 @@ def txt_file_to_list(filename):
 	in_file.close()
 	return row_list
 
-def read_sam(sam_file_name, f1_base_name):
+def read_sam_umi(sam_file_name, f1_base_name):
+
 	############################### Data gathering ###############################
 	print "**********************************"
 	print "**       Retrieving data        **"
@@ -206,7 +207,6 @@ def read_sam(sam_file_name, f1_base_name):
 
 		# map gene to tuple containing all umi and barcode pairs
 		gene_to_umi_bc_dict = defaultdict(lambda: dict())
-		umi_to_gene_bc_dict = defaultdict(lambda: dict())
 
 		while True: #sam_line_ind<1000:
 			line=sam_file.readline()
@@ -246,7 +246,6 @@ def read_sam(sam_file_name, f1_base_name):
 					sam_star += 1
 			sam_line_ind += 1
 
-
 		# compute read count and alignment stats	
 		alignment_score=sam_gene/(sam_gene+sam_star)
 		alignment_score=round(alignment_score*100)
@@ -269,6 +268,7 @@ print "***********************************"
 print "\n"
 
 # Get all predefined groups: 
+
 #Get a list of unprocessed fastq.gz files from the directory
 pckl_files = [filename for filename in glob.glob(dir_path_pickle+ '*.pckl')]
 #Sorting the list alphabetically in order to get R1 and R2 pairs) 
@@ -298,6 +298,8 @@ for d in D.keys():
 		newbc = d + numstring
 		allgroups[D[d][j]][0]=newbc
 
+top_bcs = [x[0] for x in allgroups]
+
 curr_fastq = 2
 
 dir_path_alignment = dir_path_barcodes + 'alignments/'
@@ -318,7 +320,7 @@ for f1, f2 in grouped(fastq_files, 2):
 	umi_list = []
 	pre_barcode_list = []
 	f1_base_name = '/'.join(f1.split('/')[:-1]) + '/' + f1.split(os.extsep)[0].split('/')[-1].split('_')[0]
-	name = f1.split('/')[-1].split('.')[0].split('_')[0]
+	name = datafile.split('/')[-1].split('.')[0].split('_')[0]
 
 	preprocess_results = preprocess_barcodes(f1, f2)
 	umi_list = preprocess_results[0]
@@ -381,7 +383,7 @@ for f1, f2 in grouped(fastq_files, 2):
 	
 	sam_file_name = align_reads(f1_base_name+'_processed.fastq.gz')
 
-	read_sam_list = read_sam(sam_file_name, f1_base_name)		
+	read_sam_list = read_sam_umi(sam_file_name, f1_base_name)		
 	gene_to_umi_bc_dict =read_sam_list[0]
 	dict_quality = read_sam_list[1]
 	dict_barcode_counter = read_sam_list[2]
@@ -393,36 +395,63 @@ for f1, f2 in grouped(fastq_files, 2):
 	dict_quality_scores = read_sam_list[8]
 	total_reads = read_sam_list[9]
 
-	# Write UMI:BC to gene dictionary
-	def getKey(item):
-		return(item[1])
+	# 	Settle the UMIs
+	for key in gene_to_umi_bc_dict.keys():
+		entry = gene_to_umi_bc_dict[key] # also a dictionary
+		sortedpBCs = sorted(entry)
+		vals = [entry[x] for x in sortedpBCs]
+		indexes = [i for i, x in enumerate(vals) if x==max(vals)]
+		if (len(indexes)>1):
+			gene_to_umi_bc_dict[key]='none'
+		else:
+			maxgene = sortedpBCs[indexes[0]]
+			gene_to_umi_bc_dict[key]=maxgene
 
-	sortedpairs = sorted(gene_to_umi_bc_dict.keys(), key=getKey)
-	pair_2_col = {pair:i+1 for (i, pair) in enumerate(sortedpairs)}
-	umi_matrix = [[0 for x in range(len(pair_2_col)+1)] for x in range(gene_counter+2)]
+	cellbc_to_gene_dict = defaultdict(lambda: defaultdict(int))
 
-	# write UMI:BC header for each column
-	for pair in pair_2_col.keys():
-	  col_num = pair_2_col[pair]
-	  umi_matrix[0][col_num] = pair[0] # write UMI
-	  umi_matrix[1][col_num] = pair[1] # write cell BC
+	# Assemble cell barcode - gene count matrix:
+	for barcode in top_bcs:
+		curr_keys = [pair for pair in gene_to_umi_bc_dict.keys() if pair[1]==barcode]
+		curr_keys.sort()
+		genevals = [gene_to_umi_bc_dict[key] for key in curr_keys]
+		for key_gene in dict_gene_names:
+			gene_count=genevals.count(key_gene)
+			cellbc_to_gene_dict[barcode].update({key_gene:gene_count})
+
+	d = open(datafile, 'r')
+	fin_bcs = list(d.readline().split('\n')[0].split('\t')[1:])
+	bc_2_column = {bc:i+1 for (i,bc) in enumerate(fin_bcs)}
+
+	# remove barcodes from cellbc_to_gene_dict that aren't in the final matrix file:
+	zerobcs = list(set(cellbc_to_gene_dict.keys()) - set(fin_bcs))
+
+	for zerobc in zerobcs:
+		del cellbc_to_gene_dict[zerobc]
+
+	matrix = [[0 for x in range(len(fin_bcs)+1)] for y in range(gene_counter+1)]
+
+	# write barcode header for each column
+	for bc in fin_bcs:
+		col_num = bc_2_column[bc]
+		matrix[0][col_num] = bc
 
 	# write the gene name header for each row
 	for key_gene in dict_gene_names:
-	  row_num = dict_gene_counter[dict_gene_names[key_gene]]+1
-	  umi_matrix[row_num][0] = dict_gene_names[key_gene]
+		row_num = dict_gene_counter[dict_gene_names[key_gene]]
+		matrix[row_num][0] = dict_gene_names[key_gene]
 
-	# write read counts for each gene at each UMI:BC
-	for pair in pair_2_col.keys():
-	  col_num = pair_2_col[pair]
-	  for key_gene in gene_to_umi_bc_dict[pair].keys():
-	    row_num = dict_gene_counter[dict_gene_names[key_gene]]+1
-	    umi_matrix[row_num][col_num] += gene_to_umi_bc_dict[pair][key_gene]
+	# write read counts for each gene at each barcode
+	reads_counted = 0
+	for key_barcode in cellbc_to_gene_dict.keys():
+		col_num = bc_2_column[key_barcode]
+		for key_gene in cellbc_to_gene_dict[key_barcode].keys():
+			row_num = dict_gene_counter[dict_gene_names[key_gene]]
+			matrix[row_num][col_num] += cellbc_to_gene_dict[key_barcode][key_gene]
+			reads_counted += cellbc_to_gene_dict[key_barcode][key_gene]
 
-	matrix_file = open(dir_path_barcodes+name+'_UMI_matrix.txt', 'w+')
-	for item in umi_matrix:
-	  matrix_file.write('\t'.join([str(i) for i in item])+'\n')
+	print "Genes-cells matrix created........................................."
 
+	matrix_file = open(dir_path_barcodes + name + '_pBC_matrix.txt', 'w+')
+	for item in matrix:
+			matrix_file.write('\t'.join([str(i) for i in item])+'\n')
 	matrix_file.close()
-
-	print "plasmid barcodes matrix (with UMI) created....................................."
