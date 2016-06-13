@@ -455,3 +455,8 @@ for f1, f2 in grouped(fastq_files, 2):
 	for item in matrix:
 			matrix_file.write('\t'.join([str(i) for i in item])+'\n')
 	matrix_file.close()
+
+# def getKey(item):
+# 	return(item[1])
+
+# sortedpairs = sorted(gene_to_umi_bc_dict.keys(), key=getKey)
